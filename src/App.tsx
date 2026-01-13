@@ -1,7 +1,7 @@
-import { HomePage } from '@/pages/home'
+import { GridEditorPage } from '@/pages/grid-editor'
 
 function App() {
-  return <HomePage />
+  return <GridEditorPage />
 }
 
 export default App
