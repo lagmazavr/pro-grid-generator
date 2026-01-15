@@ -1,66 +1,93 @@
 /**
  * Ant Design code generator
- * Generates clean, copy-ready code for Ant Design Grid system (Row/Col)
+ * Generates Ant Design code using CSS Grid with Card components
+ * Since Ant Design's Row/Col doesn't support multi-row spanning items,
+ * we use CSS Grid which provides full control over grid positioning
  */
 
 import type { GridState } from '@/entities/grid'
 
 /**
  * Generates Ant Design code from grid state
- * Uses Row and Col components with span props
+ * Uses CSS Grid layout with Ant Design Card components
+ * This approach supports complex layouts with multi-row and multi-column items
  */
 export function generateAntDesignCode(gridState: GridState): string {
   const { config, items } = gridState
 
   if (items.length === 0) {
-    return `import { Row, Col } from 'antd'
+    return `import React from 'react'
+import { Card } from 'antd'
 
+/**
+ * Grid component generated from visual editor
+ * Grid configuration: ${config.columns} columns × ${config.rows} rows, ${config.gap}px gap
+ * 
+ * Note: Using CSS Grid for complex layouts as Ant Design's Row/Col doesn't support
+ * multi-row spanning items. This provides full control over grid positioning.
+ */
 function MyGrid() {
   return (
-    <Row gutter={[${config.gap}, ${config.gap}]}>
+    <div
+      style={{
+        display: 'grid',
+        gridTemplateColumns: \`repeat(${config.columns}, 1fr)\`,
+        gridTemplateRows: \`repeat(${config.rows}, 1fr)\`,
+        gap: \`${config.gap}px\`,
+      }}
+    >
       {/* Add grid items here */}
-    </Row>
+    </div>
   )
 }
 
 export default MyGrid`
   }
 
-  // Group items by row for better code structure
-  const itemsByRow = new Map<number, typeof items>()
-  items.forEach((item) => {
-    const row = item.rowStart
-    if (!itemsByRow.has(row)) {
-      itemsByRow.set(row, [])
-    }
-    itemsByRow.get(row)!.push(item)
-  })
+  const gridItems = items
+    .map((item) => {
+      const colEnd = item.colStart + item.colSpan
+      const rowEnd = item.rowStart + item.rowSpan
+      return `      <Card
+        key="${item.id}"
+        style={{
+          gridColumnStart: ${item.colStart},
+          gridColumnEnd: ${colEnd},
+          gridRowStart: ${item.rowStart},
+          gridRowEnd: ${rowEnd},
+          border: '1px solid red',
+        }}
+      >
+        Item ${item.id}
+      </Card>`
+    })
+    .join('\n')
 
-  // Sort rows
-  const sortedRows = Array.from(itemsByRow.keys()).sort((a, b) => a - b)
+  return `import React from 'react'
+import { Card } from 'antd'
 
-  const rows = sortedRows.map((rowNum) => {
-    const rowItems = itemsByRow.get(rowNum)!.sort((a, b) => a.colStart - b.colStart)
-    return rowItems
-      .map((item) => {
-        // Calculate offset (colStart - 1)
-        const offset = item.colStart > 1 ? ` offset={${item.colStart - 1}}` : ''
-        const span = item.colSpan
-        return `        <Col${offset} span={${span}}>Item ${item.id}</Col>`
-      })
-      .join('\n')
-  })
-
-  return `import { Row, Col } from 'antd'
-
+/**
+ * Grid component generated from visual editor
+ * Grid configuration: ${config.columns} columns × ${config.rows} rows, ${config.gap}px gap
+ * Contains ${items.length} item${items.length !== 1 ? 's' : ''}
+ * 
+ * Note: Using CSS Grid for complex layouts as Ant Design's Row/Col doesn't support
+ * multi-row spanning items. This provides full control over grid positioning.
+ */
 function MyGrid() {
   return (
-    <Row gutter={[${config.gap}, ${config.gap}]}>
-${rows.join('\n')}
-    </Row>
+    <div
+      style={{
+        display: 'grid',
+        gridTemplateColumns: \`repeat(${config.columns}, 1fr)\`,
+        gridTemplateRows: \`repeat(${config.rows}, 1fr)\`,
+        gap: \`${config.gap}px\`,
+      }}
+    >
+${gridItems}
+    </div>
   )
 }
 
 export default MyGrid`
 }
-

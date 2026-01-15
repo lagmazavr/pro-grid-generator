@@ -1,23 +1,19 @@
 /**
- * Material UI code generator
- * Generates Material UI code using Grid component with CSS Grid override
- * Matches exact layout from grid canvas using CSS Grid positioning
+ * Tailwind CSS code generator
+ * Generates React/TSX code using Tailwind CSS utility classes for CSS Grid
  */
 
 import type { GridState } from '@/entities/grid'
 
 /**
- * Generates Material UI Grid code from grid state
- * Uses Grid container with CSS Grid styling to match canvas layout exactly
+ * Generates Tailwind CSS Grid code from grid state
+ * Uses Tailwind utility classes with CSS Grid
  */
-export function generateMaterialUICode(gridState: GridState): string {
+export function generateTailwindCode(gridState: GridState): string {
   const { config, items } = gridState
 
-  // Convert gap to spacing (Material UI spacing is typically 8px units)
-  const spacing = Math.round(config.gap / 8) || 2
-
   if (items.length === 0) {
-    return `import { Grid, Paper } from '@mui/material'
+    return `import React from 'react'
 
 /**
  * Grid component generated from visual editor
@@ -25,18 +21,16 @@ export function generateMaterialUICode(gridState: GridState): string {
  */
 function MyGrid() {
   return (
-    <Grid
-      container
-      spacing={${spacing}}
-      sx={{
-        display: 'grid',
+    <div
+      className="grid"
+      style={{
         gridTemplateColumns: \`repeat(${config.columns}, 1fr)\`,
         gridTemplateRows: \`repeat(${config.rows}, 1fr)\`,
         gap: \`${config.gap}px\`,
       }}
     >
       {/* Add grid items here */}
-    </Grid>
+    </div>
   )
 }
 
@@ -54,46 +48,40 @@ export default MyGrid`
       const itemNumber = index + 1
       const colEnd = item.colStart + item.colSpan
       const rowEnd = item.rowStart + item.rowSpan
-      return `      <Grid
+      return `      <div
         key="${item.id}"
-        sx={{
+        className="border border-gray-300 p-4 bg-gray-50 rounded"
+        style={{
           gridColumnStart: ${item.colStart},
           gridColumnEnd: ${colEnd},
           gridRowStart: ${item.rowStart},
           gridRowEnd: ${rowEnd},
         }}
       >
-        <Paper sx={{ p: 2, height: '100%', border: '1px solid red', boxSizing: 'border-box' }}>
-          Item ${itemNumber}
-        </Paper>
-      </Grid>`
+        Item ${itemNumber}
+      </div>`
     })
     .join('\n')
 
-  return `import { Grid, Paper } from '@mui/material'
+  return `import React from 'react'
 
 /**
  * Grid component generated from visual editor
  * Grid configuration: ${config.columns} columns × ${config.rows} rows, ${config.gap}px gap
  * Contains ${items.length} item${items.length !== 1 ? 's' : ''}
- * 
- * Note: Using Grid container with CSS Grid styling to exactly match the canvas layout.
- * CSS Grid properties override the default flexbox behavior for precise positioning.
  */
 function MyGrid() {
   return (
-    <Grid
-      container
-      spacing={${spacing}}
-      sx={{
-        display: 'grid',
+    <div
+      className="grid"
+      style={{
         gridTemplateColumns: \`repeat(${config.columns}, 1fr)\`,
         gridTemplateRows: \`repeat(${config.rows}, 1fr)\`,
         gap: \`${config.gap}px\`,
       }}
     >
 ${gridItems}
-    </Grid>
+    </div>
   )
 }
 

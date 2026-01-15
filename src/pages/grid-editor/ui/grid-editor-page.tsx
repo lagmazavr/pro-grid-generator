@@ -9,6 +9,11 @@ import { GridControls } from '@/features/grid-controls'
 import {
   generateAntDesignCode,
   generateMaterialUICode,
+  generateChakraUICode,
+  generateRawCSSCode,
+  generateTailwindCode,
+  generateBootstrapCode,
+  generateMantineCode,
   CodeOutput,
 } from '@/features/code-generator'
 import { Card, CardHeader, CardTitle, CardContent } from '@/shared/ui'
@@ -22,7 +27,14 @@ import {
   type GridItem,
 } from '@/entities/grid'
 
-type CodeGeneratorType = 'ant-design' | 'material-ui'
+type CodeGeneratorType =
+  | 'ant-design'
+  | 'material-ui'
+  | 'chakra-ui'
+  | 'raw-css'
+  | 'tailwind'
+  | 'bootstrap'
+  | 'mantine'
 
 /**
  * GridEditorPage - Main grid editor page
@@ -31,14 +43,28 @@ type CodeGeneratorType = 'ant-design' | 'material-ui'
 function GridEditorPage() {
   const [gridState, setGridState] = useState<GridState>(createDefaultGridState())
   const [selectedItemId, setSelectedItemId] = useState<string | null>(null)
-  const [codeGeneratorType, setCodeGeneratorType] = useState<CodeGeneratorType>('ant-design')
+  const [codeGeneratorType, setCodeGeneratorType] = useState<CodeGeneratorType>('chakra-ui')
 
   // Generate code based on selected generator type
   const generatedCode = useMemo(() => {
-    if (codeGeneratorType === 'ant-design') {
-      return generateAntDesignCode(gridState)
+    switch (codeGeneratorType) {
+      case 'ant-design':
+        return generateAntDesignCode(gridState)
+      case 'material-ui':
+        return generateMaterialUICode(gridState)
+      case 'chakra-ui':
+        return generateChakraUICode(gridState)
+      case 'raw-css':
+        return generateRawCSSCode(gridState)
+      case 'tailwind':
+        return generateTailwindCode(gridState)
+      case 'bootstrap':
+        return generateBootstrapCode(gridState)
+      case 'mantine':
+        return generateMantineCode(gridState)
+      default:
+        return generateChakraUICode(gridState)
     }
-    return generateMaterialUICode(gridState)
   }, [gridState, codeGeneratorType])
 
   // Handle grid config changes
@@ -104,7 +130,7 @@ function GridEditorPage() {
         <div className="container mx-auto px-6 py-5">
           <h1 className="text-3xl font-bold text-foreground tracking-tight">Grid Generator</h1>
           <p className="text-sm text-muted-foreground mt-2">
-            Visual grid editor for Ant Design and Material UI
+            Visual grid editor for multiple frameworks and CSS approaches
           </p>
         </div>
       </header>
@@ -152,9 +178,9 @@ function GridEditorPage() {
           {/* Code output */}
           <Card className="flex flex-col min-h-0">
             <CardHeader>
-              <div className="flex items-center justify-between">
+              <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                 <CardTitle>Generated Code</CardTitle>
-                <div className="flex gap-2">
+                <div className="flex flex-wrap gap-2">
                   <Button
                     size="sm"
                     variant={codeGeneratorType === 'ant-design' ? 'default' : 'outline'}
@@ -169,11 +195,50 @@ function GridEditorPage() {
                   >
                     Material UI
                   </Button>
+                  <Button
+                    size="sm"
+                    variant={codeGeneratorType === 'chakra-ui' ? 'default' : 'outline'}
+                    onClick={() => setCodeGeneratorType('chakra-ui')}
+                  >
+                    Chakra UI
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant={codeGeneratorType === 'mantine' ? 'default' : 'outline'}
+                    onClick={() => setCodeGeneratorType('mantine')}
+                  >
+                    Mantine
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant={codeGeneratorType === 'tailwind' ? 'default' : 'outline'}
+                    onClick={() => setCodeGeneratorType('tailwind')}
+                  >
+                    Tailwind
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant={codeGeneratorType === 'bootstrap' ? 'default' : 'outline'}
+                    onClick={() => setCodeGeneratorType('bootstrap')}
+                  >
+                    Bootstrap
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant={codeGeneratorType === 'raw-css' ? 'default' : 'outline'}
+                    onClick={() => setCodeGeneratorType('raw-css')}
+                  >
+                    Raw CSS
+                  </Button>
                 </div>
               </div>
             </CardHeader>
             <CardContent className="flex-1 flex flex-col min-h-0">
-              <CodeOutput code={generatedCode} language="tsx" className="flex-1" />
+              <CodeOutput
+                code={generatedCode}
+                language={codeGeneratorType === 'raw-css' || codeGeneratorType === 'bootstrap' ? 'html' : 'tsx'}
+                className="flex-1"
+              />
             </CardContent>
           </Card>
         </div>

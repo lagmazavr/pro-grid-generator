@@ -46,35 +46,30 @@ function GridCanvas({
 }: GridCanvasProps) {
   const { config, items } = gridState
   const containerRef = useRef<HTMLDivElement>(null)
+  const gridRef = useRef<HTMLDivElement>(null)
   const [draggedItemId, setDraggedItemId] = useState<string | null>(null)
   const [resizeHandle, setResizeHandle] = useState<ResizeHandle>(null)
-  const [dragStart, setDragStart] = useState<{ x: number; y: number; colStart: number; rowStart: number } | null>(null)
-  const [resizeStart, setResizeStart] = useState<{ item: GridItem; x: number; y: number } | null>(null)
+  const [dragStart, setDragStart] = useState<{ colStart: number; rowStart: number } | null>(null)
+  const [resizeStart, setResizeStart] = useState<{ item: GridItem } | null>(null)
 
-  // Calculate cell size based on container dimensions and grid config
-  const cellSize = useMemo(() => {
-    const cellWidth = (containerWidth - config.gap * (config.columns - 1)) / config.columns
-    const cellHeight = (containerHeight - config.gap * (config.rows - 1)) / config.rows
-    return { width: cellWidth, height: cellHeight }
+  // Calculate cell dimensions based on actual grid element
+  const cellDimensions = useMemo(() => {
+    if (!gridRef.current) {
+      // Fallback calculation if grid not mounted yet
+      const cellWidth = (containerWidth - 16 - config.gap * (config.columns - 1)) / config.columns
+      const cellHeight = (containerHeight - 16 - config.gap * (config.rows - 1)) / config.rows
+      return { cellWidth, cellHeight, gap: config.gap, padding: 8 }
+    }
+
+    const rect = gridRef.current.getBoundingClientRect()
+    const padding = 8
+    const availableWidth = rect.width - padding * 2
+    const availableHeight = rect.height - padding * 2
+    const cellWidth = (availableWidth - config.gap * (config.columns - 1)) / config.columns
+    const cellHeight = (availableHeight - config.gap * (config.rows - 1)) / config.rows
+
+    return { cellWidth, cellHeight, gap: config.gap, padding }
   }, [containerWidth, containerHeight, config.columns, config.rows, config.gap])
-
-  // Convert pixel coordinates to grid position
-  const pixelToGrid = useCallback(
-    (x: number, y: number) => {
-      const padding = 8
-      const adjustedX = x - padding
-      const adjustedY = y - padding
-
-      const col = Math.round(adjustedX / (cellSize.width + config.gap)) + 1
-      const row = Math.round(adjustedY / (cellSize.height + config.gap)) + 1
-
-      return {
-        col: Math.max(1, Math.min(col, config.columns)),
-        row: Math.max(1, Math.min(row, config.rows)),
-      }
-    },
-    [cellSize, config.gap, config.columns, config.rows]
-  )
 
   // Check if a cell is occupied by any item
   const isCellOccupied = useMemo(() => {
@@ -104,13 +99,34 @@ function GridCanvas({
     [items, config]
   )
 
-  // Calculate item styles for each grid item
+  // Convert pixel coordinates to grid position
+  const pixelToGrid = useCallback(
+    (x: number, y: number): { col: number; row: number } | null => {
+      const gridElement = gridRef.current
+      if (!gridElement) return null
+
+      const rect = gridElement.getBoundingClientRect()
+      const relativeX = x - rect.left - cellDimensions.padding
+      const relativeY = y - rect.top - cellDimensions.padding
+
+      const col = Math.floor(relativeX / (cellDimensions.cellWidth + cellDimensions.gap)) + 1
+      const row = Math.floor(relativeY / (cellDimensions.cellHeight + cellDimensions.gap)) + 1
+
+      return {
+        col: Math.max(1, Math.min(col, config.columns)),
+        row: Math.max(1, Math.min(row, config.rows)),
+      }
+    },
+    [cellDimensions, config.columns, config.rows]
+  )
+
+  // Calculate item styles for positioning
   const itemStyles = useMemo(() => {
     return items.map((item) => {
-      const left = (item.colStart - 1) * (cellSize.width + config.gap)
-      const top = (item.rowStart - 1) * (cellSize.height + config.gap)
-      const width = item.colSpan * cellSize.width + (item.colSpan - 1) * config.gap
-      const height = item.rowSpan * cellSize.height + (item.rowSpan - 1) * config.gap
+      const left = cellDimensions.padding + (item.colStart - 1) * (cellDimensions.cellWidth + cellDimensions.gap)
+      const top = cellDimensions.padding + (item.rowStart - 1) * (cellDimensions.cellHeight + cellDimensions.gap)
+      const width = item.colSpan * cellDimensions.cellWidth + (item.colSpan - 1) * cellDimensions.gap
+      const height = item.rowSpan * cellDimensions.cellHeight + (item.rowSpan - 1) * cellDimensions.gap
 
       return {
         item,
@@ -123,7 +139,7 @@ function GridCanvas({
         },
       }
     })
-  }, [items, cellSize, config.gap])
+  }, [items, cellDimensions])
 
   // Handle cell click
   const handleCellClick = (col: number, row: number) => {
@@ -137,23 +153,15 @@ function GridCanvas({
   const handleItemMouseDown = useCallback(
     (e: React.MouseEvent, item: GridItem) => {
       if (e.button !== 0) return // Only handle left mouse button
-
-      const rect = containerRef.current?.getBoundingClientRect()
-      if (!rect) return
-
-      const startX = e.clientX - rect.left
-      const startY = e.clientY - rect.top
+      e.stopPropagation()
 
       setDraggedItemId(item.id)
       setDragStart({
-        x: startX,
-        y: startY,
         colStart: item.colStart,
         rowStart: item.rowStart,
       })
 
       e.preventDefault()
-      e.stopPropagation()
     },
     []
   )
@@ -161,24 +169,16 @@ function GridCanvas({
   // Handle mouse move for dragging
   const handleMouseMove = useCallback(
     (e: MouseEvent) => {
-      if (!containerRef.current) return
-
       // Handle drag
       if (draggedItemId && dragStart) {
-        const rect = containerRef.current.getBoundingClientRect()
-        const currentX = e.clientX - rect.left
-        const currentY = e.clientY - rect.top
+        const gridPos = pixelToGrid(e.clientX, e.clientY)
+        if (!gridPos) return
 
-        const currentPos = pixelToGrid(currentX, currentY)
         const item = items.find((i) => i.id === draggedItemId)
         if (!item) return
 
-        const startGridPos = pixelToGrid(dragStart.x, dragStart.y)
-        const deltaCol = currentPos.col - startGridPos.col
-        const deltaRow = currentPos.row - startGridPos.row
-
-        const newColStart = Math.max(1, Math.min(dragStart.colStart + deltaCol, config.columns - item.colSpan + 1))
-        const newRowStart = Math.max(1, Math.min(dragStart.rowStart + deltaRow, config.rows - item.rowSpan + 1))
+        const newColStart = Math.max(1, Math.min(gridPos.col, config.columns - item.colSpan + 1))
+        const newRowStart = Math.max(1, Math.min(gridPos.row, config.rows - item.rowSpan + 1))
 
         // Check if the new position would collide with other items
         const proposedItem: GridItem = {
@@ -197,16 +197,9 @@ function GridCanvas({
 
       // Handle resize
       if (resizeHandle && resizeStart) {
-        const rect = containerRef.current.getBoundingClientRect()
-        const currentX = e.clientX - rect.left
-        const currentY = e.clientY - rect.top
+        const gridPos = pixelToGrid(e.clientX, e.clientY)
+        if (!gridPos) return
 
-        const currentPos = pixelToGrid(currentX, currentY)
-        // Get current item state from items array (may have been updated)
-        const currentItem = items.find((i) => i.id === resizeStart.item.id)
-        if (!currentItem) return
-
-        // Use initial item state for resize calculations (prevents cumulative errors)
         const initialItem = resizeStart.item
         let newColStart = initialItem.colStart
         let newRowStart = initialItem.rowStart
@@ -216,37 +209,37 @@ function GridCanvas({
         // Calculate new bounds based on resize handle
         switch (resizeHandle) {
           case 'nw':
-            newColStart = Math.max(1, Math.min(currentPos.col, initialItem.colStart + initialItem.colSpan - 1))
-            newRowStart = Math.max(1, Math.min(currentPos.row, initialItem.rowStart + initialItem.rowSpan - 1))
+            newColStart = Math.max(1, Math.min(gridPos.col, initialItem.colStart + initialItem.colSpan - 1))
+            newRowStart = Math.max(1, Math.min(gridPos.row, initialItem.rowStart + initialItem.rowSpan - 1))
             newColSpan = initialItem.colStart + initialItem.colSpan - newColStart
             newRowSpan = initialItem.rowStart + initialItem.rowSpan - newRowStart
             break
           case 'ne':
-            newRowStart = Math.max(1, Math.min(currentPos.row, initialItem.rowStart + initialItem.rowSpan - 1))
-            newColSpan = Math.max(1, Math.min(currentPos.col - initialItem.colStart + 1, config.columns - initialItem.colStart + 1))
+            newRowStart = Math.max(1, Math.min(gridPos.row, initialItem.rowStart + initialItem.rowSpan - 1))
+            newColSpan = Math.max(1, Math.min(gridPos.col - initialItem.colStart + 1, config.columns - initialItem.colStart + 1))
             newRowSpan = initialItem.rowStart + initialItem.rowSpan - newRowStart
             break
           case 'sw':
-            newColStart = Math.max(1, Math.min(currentPos.col, initialItem.colStart + initialItem.colSpan - 1))
+            newColStart = Math.max(1, Math.min(gridPos.col, initialItem.colStart + initialItem.colSpan - 1))
             newColSpan = initialItem.colStart + initialItem.colSpan - newColStart
-            newRowSpan = Math.max(1, Math.min(currentPos.row - initialItem.rowStart + 1, config.rows - initialItem.rowStart + 1))
+            newRowSpan = Math.max(1, Math.min(gridPos.row - initialItem.rowStart + 1, config.rows - initialItem.rowStart + 1))
             break
           case 'se':
-            newColSpan = Math.max(1, Math.min(currentPos.col - initialItem.colStart + 1, config.columns - initialItem.colStart + 1))
-            newRowSpan = Math.max(1, Math.min(currentPos.row - initialItem.rowStart + 1, config.rows - initialItem.rowStart + 1))
+            newColSpan = Math.max(1, Math.min(gridPos.col - initialItem.colStart + 1, config.columns - initialItem.colStart + 1))
+            newRowSpan = Math.max(1, Math.min(gridPos.row - initialItem.rowStart + 1, config.rows - initialItem.rowStart + 1))
             break
           case 'n':
-            newRowStart = Math.max(1, Math.min(currentPos.row, initialItem.rowStart + initialItem.rowSpan - 1))
+            newRowStart = Math.max(1, Math.min(gridPos.row, initialItem.rowStart + initialItem.rowSpan - 1))
             newRowSpan = initialItem.rowStart + initialItem.rowSpan - newRowStart
             break
           case 's':
-            newRowSpan = Math.max(1, Math.min(currentPos.row - initialItem.rowStart + 1, config.rows - initialItem.rowStart + 1))
+            newRowSpan = Math.max(1, Math.min(gridPos.row - initialItem.rowStart + 1, config.rows - initialItem.rowStart + 1))
             break
           case 'e':
-            newColSpan = Math.max(1, Math.min(currentPos.col - initialItem.colStart + 1, config.columns - initialItem.colStart + 1))
+            newColSpan = Math.max(1, Math.min(gridPos.col - initialItem.colStart + 1, config.columns - initialItem.colStart + 1))
             break
           case 'w':
-            newColStart = Math.max(1, Math.min(currentPos.col, initialItem.colStart + initialItem.colSpan - 1))
+            newColStart = Math.max(1, Math.min(gridPos.col, initialItem.colStart + initialItem.colSpan - 1))
             newColSpan = initialItem.colStart + initialItem.colSpan - newColStart
             break
         }
@@ -267,7 +260,9 @@ function GridCanvas({
         }
 
         if (!wouldCollide(proposedItem, initialItem.id)) {
+          const currentItem = items.find((i) => i.id === initialItem.id)
           if (
+            !currentItem ||
             newColStart !== currentItem.colStart ||
             newRowStart !== currentItem.rowStart ||
             newColSpan !== currentItem.colSpan ||
@@ -308,18 +303,8 @@ function GridCanvas({
       e.stopPropagation()
       e.preventDefault()
 
-      const rect = containerRef.current?.getBoundingClientRect()
-      if (!rect) return
-
-      const startX = e.clientX - rect.left
-      const startY = e.clientY - rect.top
-
       setResizeHandle(handle)
-      setResizeStart({
-        item,
-        x: startX,
-        y: startY,
-      })
+      setResizeStart({ item })
     },
     []
   )
@@ -333,8 +318,9 @@ function GridCanvas({
         height: containerHeight,
       }}
     >
-      {/* Grid background with lines */}
+      {/* Grid background - uses CSS Grid for cell layout */}
       <div
+        ref={gridRef}
         className="absolute inset-0"
         style={{
           display: 'grid',
@@ -369,8 +355,8 @@ function GridCanvas({
         })}
       </div>
 
-      {/* Grid items */}
-      <div className="absolute inset-0 p-2 pointer-events-none">
+      {/* Grid items - positioned absolutely to match grid cells */}
+      <div className="absolute inset-0 pointer-events-none">
         {itemStyles.map(({ item, style }) => {
           const isSelected = selectedItemId === item.id
           const isDragging = draggedItemId === item.id
