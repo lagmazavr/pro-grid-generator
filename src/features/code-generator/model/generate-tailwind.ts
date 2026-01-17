@@ -9,33 +9,13 @@ import type { GridState } from '@/entities/grid'
  * Generates Tailwind CSS Grid code from grid state
  * Uses Tailwind utility classes with CSS Grid
  */
-export function generateTailwindCode(gridState: GridState): string {
+export function generateTailwindCode(gridState: GridState, format: 'jsx' | 'html' = 'jsx'): string {
   const { config, items } = gridState
 
-  if (items.length === 0) {
-    return `import React from 'react'
-
-/**
- * Grid component generated from visual editor
- * Grid configuration: ${config.columns} columns × ${config.rows} rows, ${config.gap}px gap
- */
-function MyGrid() {
-  return (
-    <div
-      className="grid"
-      style={{
-        gridTemplateColumns: \`repeat(${config.columns}, 1fr)\`,
-        gridTemplateRows: \`repeat(${config.rows}, 1fr)\`,
-        gap: \`${config.gap}px\`,
-      }}
-    >
-      {/* Add grid items here */}
-    </div>
-  )
-}
-
-export default MyGrid`
-  }
+  // Convert gap to Tailwind spacing (Tailwind spacing is typically 4px units, but we'll use arbitrary values for precision)
+  const gapClass = config.gap % 4 === 0 ? `gap-${config.gap / 4}` : `gap-[${config.gap}px]`
+  const gridColsClass = `grid-cols-${config.columns}`
+  const gridRowsClass = `grid-rows-${config.rows}`
 
   // Sort items by row start, then column start for consistent ordering
   const sortedItems = [...items].sort((a, b) => {
@@ -46,44 +26,77 @@ export default MyGrid`
   const gridItems = sortedItems
     .map((item, index) => {
       const itemNumber = index + 1
-      const colEnd = item.colStart + item.colSpan
-      const rowEnd = item.rowStart + item.rowSpan
-      return `      <div
-        key="${item.id}"
-        className="border border-gray-300 p-4 bg-gray-50 rounded"
-        style={{
-          gridColumnStart: ${item.colStart},
-          gridColumnEnd: ${colEnd},
-          gridRowStart: ${item.rowStart},
-          gridRowEnd: ${rowEnd},
-        }}
-      >
+      const classes = [
+        `col-span-${item.colSpan}`,
+        `row-span-${item.rowSpan}`,
+        item.colStart > 1 ? `col-start-${item.colStart}` : '',
+        item.rowStart > 1 ? `row-start-${item.rowStart}` : '',
+      ].filter(Boolean).join(' ')
+      
+      const className = format === 'jsx' ? 'className' : 'class'
+      return `      <div ${className}="${classes}">
         Item ${itemNumber}
       </div>`
     })
     .join('\n')
 
+  if (format === 'html') {
+    if (items.length === 0) {
+      return `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tailwind Grid Layout</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body>
+  <div class="grid ${gridColsClass} ${gridRowsClass} ${gapClass}">
+    <!-- Add grid items here -->
+  </div>
+</body>
+</html>`
+    }
+    return `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tailwind Grid Layout</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body>
+  <div class="grid ${gridColsClass} ${gridRowsClass} ${gapClass}">
+${gridItems}
+  </div>
+</body>
+</html>`
+  }
+
+  // JSX format
+  if (items.length === 0) {
+    return `import React from 'react'
+
+const MyGrid = () => {
+  return (
+    <div className="grid ${gridColsClass} ${gridRowsClass} ${gapClass}">
+      {/* Add grid items here */}
+    </div>
+  )
+}
+
+export default MyGrid;`
+  }
+
   return `import React from 'react'
 
-/**
- * Grid component generated from visual editor
- * Grid configuration: ${config.columns} columns × ${config.rows} rows, ${config.gap}px gap
- * Contains ${items.length} item${items.length !== 1 ? 's' : ''}
- */
-function MyGrid() {
+const MyGrid = () => {
   return (
-    <div
-      className="grid"
-      style={{
-        gridTemplateColumns: \`repeat(${config.columns}, 1fr)\`,
-        gridTemplateRows: \`repeat(${config.rows}, 1fr)\`,
-        gap: \`${config.gap}px\`,
-      }}
-    >
+    <div className="grid ${gridColsClass} ${gridRowsClass} ${gapClass}">
 ${gridItems}
     </div>
   )
 }
 
-export default MyGrid`
+export default MyGrid;`
 }

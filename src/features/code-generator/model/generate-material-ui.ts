@@ -13,19 +13,50 @@ import type { GridState } from '@/entities/grid'
 export function generateMaterialUICode(gridState: GridState): string {
   const { config, items } = gridState
 
+  // Check if there are any vertical items (rowSpan > 1)
+  const hasVerticalItems = items.some(item => item.rowSpan > 1)
+
   // Convert gap to spacing (Material UI spacing is typically 8px units)
   const spacing = Math.round(config.gap / 8) || 2
 
-  if (items.length === 0) {
-    return `import { Grid, Paper } from '@mui/material'
+  // If no vertical items, use Material UI's native 12-column grid system
+  if (!hasVerticalItems && items.length > 0) {
+    const sortedItems = [...items].sort((a, b) => {
+      if (a.rowStart !== b.rowStart) return a.rowStart - b.rowStart
+      return a.colStart - b.colStart
+    })
 
-/**
- * Grid component generated from visual editor
- * Grid configuration: ${config.columns} columns × ${config.rows} rows, ${config.gap}px gap
- */
-function MyGrid() {
+    // Material UI uses 12 columns, calculate xs prop (each item spans config.columns/12 * colSpan)
+    const columnRatio = 12 / config.columns
+    const gridItems = sortedItems
+      .map((item, index) => {
+        const itemNumber = index + 1
+        const xs = Math.round(item.colSpan * columnRatio)
+        return `      <Grid2 size={${xs}}>
+        Item ${itemNumber}
+      </Grid2>`
+      })
+      .join('\n')
+
+    return `import { Grid2 } from '@mui/material'
+
+const MyGrid = () => {
   return (
-    <Grid
+    <Grid2 container spacing={${spacing}}>
+${gridItems}
+    </Grid2>
+  )
+}
+
+export default MyGrid;`
+  }
+
+  if (items.length === 0) {
+    return `import { Grid2 } from '@mui/material'
+
+const MyGrid = () => {
+  return (
+    <Grid2
       container
       spacing={${spacing}}
       sx={{
@@ -36,11 +67,11 @@ function MyGrid() {
       }}
     >
       {/* Add grid items here */}
-    </Grid>
+    </Grid2>
   )
 }
 
-export default MyGrid`
+export default MyGrid;`
   }
 
   // Sort items by row start, then column start for consistent ordering
@@ -54,8 +85,7 @@ export default MyGrid`
       const itemNumber = index + 1
       const colEnd = item.colStart + item.colSpan
       const rowEnd = item.rowStart + item.rowSpan
-      return `      <Grid
-        key="${item.id}"
+      return `      <Grid2
         sx={{
           gridColumnStart: ${item.colStart},
           gridColumnEnd: ${colEnd},
@@ -63,26 +93,16 @@ export default MyGrid`
           gridRowEnd: ${rowEnd},
         }}
       >
-        <Paper sx={{ p: 2, height: '100%', border: '1px solid red', boxSizing: 'border-box' }}>
-          Item ${itemNumber}
-        </Paper>
-      </Grid>`
+        Item ${itemNumber}
+      </Grid2>`
     })
     .join('\n')
 
-  return `import { Grid, Paper } from '@mui/material'
+  return `import { Grid2 } from '@mui/material'
 
-/**
- * Grid component generated from visual editor
- * Grid configuration: ${config.columns} columns × ${config.rows} rows, ${config.gap}px gap
- * Contains ${items.length} item${items.length !== 1 ? 's' : ''}
- * 
- * Note: Using Grid container with CSS Grid styling to exactly match the canvas layout.
- * CSS Grid properties override the default flexbox behavior for precise positioning.
- */
-function MyGrid() {
+const MyGrid = () => {
   return (
-    <Grid
+    <Grid2
       container
       spacing={${spacing}}
       sx={{
@@ -93,9 +113,9 @@ function MyGrid() {
       }}
     >
 ${gridItems}
-    </Grid>
+    </Grid2>
   )
 }
 
-export default MyGrid`
+export default MyGrid;`
 }

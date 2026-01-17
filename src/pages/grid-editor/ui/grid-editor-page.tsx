@@ -7,13 +7,13 @@ import { useState, useMemo } from 'react'
 import { GridCanvas } from '@/widgets/grid-canvas'
 import { GridControls } from '@/features/grid-controls'
 import {
-  generateAntDesignCode,
   generateMaterialUICode,
   generateChakraUICode,
   generateRawCSSCode,
   generateTailwindCode,
   generateBootstrapCode,
   generateMantineCode,
+  generateAntDesignCode,
   CodeOutput,
 } from '@/features/code-generator'
 import { Card, CardHeader, CardTitle, CardContent } from '@/shared/ui'
@@ -28,13 +28,15 @@ import {
 } from '@/entities/grid'
 
 type CodeGeneratorType =
-  | 'ant-design'
   | 'material-ui'
   | 'chakra-ui'
+  | 'mantine'
+  | 'ant-design'
   | 'raw-css'
   | 'tailwind'
   | 'bootstrap'
-  | 'mantine'
+
+type CodeFormat = 'jsx' | 'html'
 
 /**
  * GridEditorPage - Main grid editor page
@@ -43,29 +45,30 @@ type CodeGeneratorType =
 function GridEditorPage() {
   const [gridState, setGridState] = useState<GridState>(createDefaultGridState())
   const [selectedItemId, setSelectedItemId] = useState<string | null>(null)
-  const [codeGeneratorType, setCodeGeneratorType] = useState<CodeGeneratorType>('chakra-ui')
+  const [codeGeneratorType, setCodeGeneratorType] = useState<CodeGeneratorType>('material-ui')
+  const [codeFormat, setCodeFormat] = useState<CodeFormat>('jsx')
 
-  // Generate code based on selected generator type
+  // Generate code based on selected generator type and format
   const generatedCode = useMemo(() => {
     switch (codeGeneratorType) {
-      case 'ant-design':
-        return generateAntDesignCode(gridState)
       case 'material-ui':
         return generateMaterialUICode(gridState)
       case 'chakra-ui':
         return generateChakraUICode(gridState)
-      case 'raw-css':
-        return generateRawCSSCode(gridState)
-      case 'tailwind':
-        return generateTailwindCode(gridState)
-      case 'bootstrap':
-        return generateBootstrapCode(gridState)
       case 'mantine':
         return generateMantineCode(gridState)
+      case 'ant-design':
+        return generateAntDesignCode(gridState)
+      case 'raw-css':
+        return generateRawCSSCode(gridState, codeFormat)
+      case 'tailwind':
+        return generateTailwindCode(gridState, codeFormat)
+      case 'bootstrap':
+        return generateBootstrapCode(gridState, codeFormat)
       default:
-        return generateChakraUICode(gridState)
+        return generateMaterialUICode(gridState)
     }
-  }, [gridState, codeGeneratorType])
+  }, [gridState, codeGeneratorType, codeFormat])
 
   // Handle grid config changes
   const handleConfigChange = (config: GridState['config']) => {
@@ -183,32 +186,12 @@ function GridEditorPage() {
                 <div className="flex flex-wrap gap-2">
                   <Button
                     size="sm"
-                    variant={codeGeneratorType === 'ant-design' ? 'default' : 'outline'}
-                    onClick={() => setCodeGeneratorType('ant-design')}
+                    variant={codeGeneratorType === 'raw-css' ? 'default' : 'outline'}
+                    onClick={() => setCodeGeneratorType('raw-css')}
                   >
-                    Ant Design
+                    Raw CSS
                   </Button>
-                  <Button
-                    size="sm"
-                    variant={codeGeneratorType === 'material-ui' ? 'default' : 'outline'}
-                    onClick={() => setCodeGeneratorType('material-ui')}
-                  >
-                    Material UI
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant={codeGeneratorType === 'chakra-ui' ? 'default' : 'outline'}
-                    onClick={() => setCodeGeneratorType('chakra-ui')}
-                  >
-                    Chakra UI
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant={codeGeneratorType === 'mantine' ? 'default' : 'outline'}
-                    onClick={() => setCodeGeneratorType('mantine')}
-                  >
-                    Mantine
-                  </Button>
+                  
                   <Button
                     size="sm"
                     variant={codeGeneratorType === 'tailwind' ? 'default' : 'outline'}
@@ -218,25 +201,65 @@ function GridEditorPage() {
                   </Button>
                   <Button
                     size="sm"
-                    variant={codeGeneratorType === 'bootstrap' ? 'default' : 'outline'}
-                    onClick={() => setCodeGeneratorType('bootstrap')}
+                    variant={codeGeneratorType === 'material-ui' ? 'default' : 'outline'}
+                    onClick={() => setCodeGeneratorType('material-ui')}
                   >
-                    Bootstrap
+                    Material UI v7
                   </Button>
                   <Button
                     size="sm"
-                    variant={codeGeneratorType === 'raw-css' ? 'default' : 'outline'}
-                    onClick={() => setCodeGeneratorType('raw-css')}
+                    variant={codeGeneratorType === 'ant-design' ? 'default' : 'outline'}
+                    onClick={() => setCodeGeneratorType('ant-design')}
                   >
-                    Raw CSS
+                    Ant Design v6
                   </Button>
+                  {/* <Button
+                    size="sm"
+                    variant={codeGeneratorType === 'chakra-ui' ? 'default' : 'outline'}
+                    onClick={() => setCodeGeneratorType('chakra-ui')}
+                  >
+                    Chakra UI
+                  </Button> */}
+                  <Button
+                    size="sm"
+                    variant={codeGeneratorType === 'mantine' ? 'default' : 'outline'}
+                    onClick={() => setCodeGeneratorType('mantine')}
+                  >
+                    Mantine v8
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant={codeGeneratorType === 'bootstrap' ? 'default' : 'outline'}
+                    onClick={() => setCodeGeneratorType('bootstrap')}
+                  >
+                    Bootstrap 5
+                  </Button>
+         
                 </div>
               </div>
             </CardHeader>
             <CardContent className="flex-1 flex flex-col min-h-0">
+              {(codeGeneratorType === 'raw-css' || codeGeneratorType === 'tailwind' || codeGeneratorType === 'bootstrap') && (
+                <div className="flex gap-2 mb-2">
+                  <Button
+                    size="sm"
+                    variant={codeFormat === 'jsx' ? 'default' : 'outline'}
+                    onClick={() => setCodeFormat('jsx')}
+                  >
+                    JSX
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant={codeFormat === 'html' ? 'default' : 'outline'}
+                    onClick={() => setCodeFormat('html')}
+                  >
+                    HTML
+                  </Button>
+                </div>
+              )}
               <CodeOutput
                 code={generatedCode}
-                language={codeGeneratorType === 'raw-css' || codeGeneratorType === 'bootstrap' ? 'html' : 'tsx'}
+                language={codeFormat === 'html' || codeGeneratorType === 'raw-css' || codeGeneratorType === 'bootstrap' ? 'html' : 'tsx'}
                 className="flex-1"
               />
             </CardContent>

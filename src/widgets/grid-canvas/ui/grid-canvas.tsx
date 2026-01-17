@@ -120,6 +120,19 @@ function GridCanvas({
     [cellDimensions, config.columns, config.rows]
   )
 
+  // Map item IDs to item numbers (sorted by row start, then column start)
+  const itemNumberMap = useMemo(() => {
+    const sortedItems = [...items].sort((a, b) => {
+      if (a.rowStart !== b.rowStart) return a.rowStart - b.rowStart
+      return a.colStart - b.colStart
+    })
+    const map = new Map<string, number>()
+    sortedItems.forEach((item, index) => {
+      map.set(item.id, index + 1)
+    })
+    return map
+  }, [items])
+
   // Calculate item styles for positioning
   const itemStyles = useMemo(() => {
     return items.map((item) => {
@@ -404,7 +417,7 @@ function GridCanvas({
               )}
 
               <div className="text-center px-2 py-1 pointer-events-none">
-                <div className="font-semibold">{item.id}</div>
+                <div className="font-semibold">Item {itemNumberMap.get(item.id) ?? 0}</div>
                 <div className="text-muted-foreground text-[10px] mt-0.5">
                   {item.colSpan}×{item.rowSpan}
                 </div>

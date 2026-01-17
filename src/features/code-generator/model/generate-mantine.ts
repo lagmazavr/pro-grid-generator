@@ -13,25 +13,66 @@ import type { GridState } from '@/entities/grid'
 export function generateMantineCode(gridState: GridState): string {
   const { config, items } = gridState
 
-  if (items.length === 0) {
-    return `import { MantineProvider, Box, Paper } from "@mantine/core";
+  // Check if there are any vertical items (rowSpan > 1)
+  const hasVerticalItems = items.some(item => item.rowSpan > 1)
 
-export default function App() {
+  // If no vertical items, use Mantine's native grid system
+  if (!hasVerticalItems && items.length > 0) {
+    const sortedItems = [...items].sort((a, b) => {
+      if (a.rowStart !== b.rowStart) return a.rowStart - b.rowStart
+      return a.colStart - b.colStart
+    })
+
+    // Mantine Grid uses 12 columns, calculate span (each item spans config.columns/12 * colSpan)
+    const columnRatio = 12 / config.columns
+    const gridItems = sortedItems
+      .map((item, index) => {
+        const itemNumber = index + 1
+        const span = Math.round(item.colSpan * columnRatio)
+        return `        <Grid.Col span={${span}}>
+          Item ${itemNumber}
+        </Grid.Col>`
+      })
+      .join('\n')
+
+    const gap = config.gap % 4 === 0 ? config.gap / 4 : `\`${config.gap}px\``
+
+    return `import { MantineProvider, Grid } from "@mantine/core";
+
+const MyGrid = () => {
   return (
     <MantineProvider>
-      <Box
+      <Grid gutter={${gap}}>
+${gridItems}
+      </Grid>
+    </MantineProvider>
+  );
+}
+
+export default MyGrid;`
+  }
+
+  if (items.length === 0) {
+    return `import { MantineProvider, Grid } from "@mantine/core";
+
+const MyGrid = () => {
+  return (
+    <MantineProvider>
+      <Grid
         style={{
           display: "grid",
           gridTemplateColumns: "repeat(${config.columns}, 1fr)",
           gridTemplateRows: "repeat(${config.rows}, 1fr)",
-          gap: ${config.gap},
+          gap: \`${config.gap}px\`,
         }}
       >
         {/* Add grid items here */}
-      </Box>
+      </Grid>
     </MantineProvider>
   );
-}`
+}
+
+export default MyGrid;`
   }
 
   // Sort items by row start, then column start for consistent ordering
@@ -41,31 +82,34 @@ export default function App() {
   })
 
   const gridItems = sortedItems
-    .map((item) => {
+    .map((item, index) => {
+      const itemNumber = index + 1
       const colEnd = item.colStart + item.colSpan
       const rowEnd = item.rowStart + item.rowSpan
-      return `        <Box style={{ gridColumn: "${item.colStart} / ${colEnd}", gridRow: "${item.rowStart} / ${rowEnd}" }}>
-          <Paper withBorder p="md">${item.colSpan}×${item.rowSpan}</Paper>
-        </Box>`
+      return `        <Grid.Col style={{ gridColumnStart: ${item.colStart}, gridColumnEnd: ${colEnd}, gridRowStart: ${item.rowStart}, gridRowEnd: ${rowEnd} }}>
+          Item ${itemNumber}
+        </Grid.Col>`
     })
     .join('\n')
 
-  return `import { MantineProvider, Box, Paper } from "@mantine/core";
+  return `import { MantineProvider, Grid } from "@mantine/core";
 
-export default function App() {
+const MyGrid = () => {
   return (
     <MantineProvider>
-      <Box
+      <Grid
         style={{
           display: "grid",
           gridTemplateColumns: "repeat(${config.columns}, 1fr)",
           gridTemplateRows: "repeat(${config.rows}, 1fr)",
-          gap: ${config.gap},
+          gap: \`${config.gap}px\`,
         }}
       >
 ${gridItems}
-      </Box>
+      </Grid>
     </MantineProvider>
   );
-}`
+}
+
+export default MyGrid;`
 }
