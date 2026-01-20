@@ -11,7 +11,6 @@ import {
   generateChakraUICode,
   generateRawCSSCode,
   generateTailwindCode,
-  generateBootstrapCode,
   generateMantineCode,
   generateAntDesignCode,
   CodeOutput,
@@ -34,7 +33,6 @@ type CodeGeneratorType =
   | 'ant-design'
   | 'raw-css'
   | 'tailwind'
-  | 'bootstrap'
 
 type CodeFormat = 'jsx' | 'html'
 
@@ -63,8 +61,6 @@ function GridEditorPage() {
         return generateRawCSSCode(gridState, codeFormat)
       case 'tailwind':
         return generateTailwindCode(gridState, codeFormat)
-      case 'bootstrap':
-        return generateBootstrapCode(gridState, codeFormat)
       default:
         return generateMaterialUICode(gridState)
     }
@@ -227,19 +223,11 @@ function GridEditorPage() {
                   >
                     Mantine v8
                   </Button>
-                  <Button
-                    size="sm"
-                    variant={codeGeneratorType === 'bootstrap' ? 'default' : 'outline'}
-                    onClick={() => setCodeGeneratorType('bootstrap')}
-                  >
-                    Bootstrap 5
-                  </Button>
-         
                 </div>
               </div>
             </CardHeader>
             <CardContent className="flex-1 flex flex-col min-h-0">
-              {(codeGeneratorType === 'raw-css' || codeGeneratorType === 'tailwind' || codeGeneratorType === 'bootstrap') && (
+              {(codeGeneratorType === 'raw-css' || codeGeneratorType === 'tailwind') && (
                 <div className="flex gap-2 mb-2">
                   <Button
                     size="sm"
@@ -259,7 +247,7 @@ function GridEditorPage() {
               )}
               <CodeOutput
                 code={generatedCode}
-                language={codeFormat === 'html' || codeGeneratorType === 'raw-css' || codeGeneratorType === 'bootstrap' ? 'html' : 'tsx'}
+                language={codeFormat === 'html' || codeGeneratorType === 'raw-css' ? 'html' : 'tsx'}
                 className="flex-1"
               />
             </CardContent>
