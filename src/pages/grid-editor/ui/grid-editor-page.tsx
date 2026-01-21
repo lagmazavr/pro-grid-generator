@@ -1,31 +1,31 @@
 'use client'
 
-import { useState, useMemo, useEffect } from 'react'
-import { useTranslations } from 'next-intl'
-import { useParams, useRouter } from 'next/navigation'
-import { GridCanvas } from '@/widgets/grid-canvas'
-import { GridControls } from '@/features/grid-controls'
 import {
+  clampGridItem,
+  createDefaultGridState,
+  generateGridItemId,
+  isValidGridItem,
+  type GridItem,
+  type GridState,
+} from '@/entities/grid'
+import {
+  CodeOutput,
+  generateAntDesignCode,
   generateMaterialUICode,
   generateRawCSSCode,
   generateTailwindCode,
-  generateMantineCode,
-  generateAntDesignCode,
-  CodeOutput,
 } from '@/features/code-generator'
-import { Card, CardHeader, CardTitle, CardContent } from '@/shared/ui'
-import { Button, Checkbox } from '@/shared/ui'
-import { ThemeToggle } from '@/features/theme-toggle'
+import { CodeGeneratorOptions } from '@/features/code-generator-options'
+import { GridControls } from '@/features/grid-controls'
 import { LanguageToggle } from '@/features/language-toggle'
-import {
-  createDefaultGridState,
-  generateGridItemId,
-  clampGridItem,
-  isValidGridItem,
-  type GridState,
-  type GridItem,
-} from '@/entities/grid'
+import { ThemeToggle } from '@/features/theme-toggle'
 import { DEFAULT_TECHNOLOGY, type Technology } from '@/shared/types/routing'
+import { Card, CardContent } from '@/shared/ui'
+import { GridCanvas } from '@/widgets/grid-canvas'
+import { TechnologySelector } from '@/widgets/technology-selector'
+import { useTranslations } from 'next-intl'
+import { useParams, useRouter } from 'next/navigation'
+import { useEffect, useMemo, useState } from 'react'
 
 type CodeGeneratorType = Technology
 
@@ -139,8 +139,6 @@ function GridEditorPage({ technology: initialTechnology }: GridEditorPageProps) 
     switch (codeGeneratorType) {
       case 'material-ui':
         return generateMaterialUICode(gridState, options)
-      case 'mantine':
-        return generateMantineCode(gridState, options)
       case 'ant-design':
         return generateAntDesignCode(gridState, options)
       case 'raw-css':
@@ -219,9 +217,6 @@ function GridEditorPage({ technology: initialTechnology }: GridEditorPageProps) 
               <h1 className="text-3xl font-bold text-foreground tracking-tight">
                 {t('header.title')}
               </h1>
-              {/* <p className="text-sm text-muted-foreground mt-2">
-                {t('header.subtitle')}
-              </p> */}
             </div>
             <div className="flex items-center gap-2">
               <LanguageToggle />
@@ -264,91 +259,22 @@ function GridEditorPage({ technology: initialTechnology }: GridEditorPageProps) 
           <Card className="flex flex-col min-h-0 bg-transparent border-none">
             <CardContent className="flex-1 flex flex-col min-h-0 gap-4">
               <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-                <div className="flex flex-wrap gap-2">
-                  <Button
-                    size="sm"
-                    variant={codeGeneratorType === 'raw-css' ? 'default' : 'outline'}
-                    onClick={() => handleTechnologyChange('raw-css')}
-                  >
-                    {t('technologies.raw-css')}
-                  </Button>
-                  
-                  <Button
-                    size="sm"
-                    variant={codeGeneratorType === 'tailwind' ? 'default' : 'outline'}
-                    onClick={() => handleTechnologyChange('tailwind')}
-                  >
-                    {t('technologies.tailwind')}
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant={codeGeneratorType === 'material-ui' ? 'default' : 'outline'}
-                    onClick={() => handleTechnologyChange('material-ui')}
-                  >
-                    {t('technologies.material-ui')}
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant={codeGeneratorType === 'ant-design' ? 'default' : 'outline'}
-                    onClick={() => handleTechnologyChange('ant-design')}
-                  >
-                    {t('technologies.ant-design')}
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant={codeGeneratorType === 'mantine' ? 'default' : 'outline'}
-                    onClick={() => handleTechnologyChange('mantine')}
-                  >
-                    {t('technologies.mantine')}
-                  </Button>
-                </div>
+                <TechnologySelector
+                  selectedTechnology={codeGeneratorType}
+                  onTechnologyChange={handleTechnologyChange}
+                />
               </div>
-              {(codeGeneratorType === 'raw-css' || codeGeneratorType === 'tailwind') && (
-                <div className="flex gap-2">
-                  <Button
-                    size="sm"
-                    variant={codeFormat === 'jsx' ? 'default' : 'outline'}
-                    onClick={() => setCodeFormat('jsx')}
-                  >
-                    {t('formats.jsx')}
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant={codeFormat === 'html' ? 'default' : 'outline'}
-                    onClick={() => setCodeFormat('html')}
-                  >
-                    {t('formats.html')}
-                  </Button>
-                </div>
-              )}
-              {(codeGeneratorType === 'material-ui' || codeGeneratorType === 'ant-design' || codeGeneratorType === 'mantine') && (
-                <div className="flex gap-4">
-                  <Checkbox
-                    id="with-styled-borders"
-                    checked={withStyledBorders}
-                    onChange={(e) => setWithStyledBorders(e.target.checked)}
-                    label={t('options.withStyledBorders')}
-                  />
-                  {hasVerticalItems && (
-                    <Checkbox
-                      id="with-tailwind"
-                      checked={withTailwind}
-                      onChange={(e) => setWithTailwind(e.target.checked)}
-                      label={t('options.withTailwind')}
-                    />
-                  )}
-                </div>
-              )}
-              {(codeGeneratorType === 'raw-css' || codeGeneratorType === 'tailwind') && (
-                <div className="flex gap-4">
-                  <Checkbox
-                    id="with-styled-borders-css"
-                    checked={withStyledBorders}
-                    onChange={(e) => setWithStyledBorders(e.target.checked)}
-                    label={t('options.withStyledBorders')}
-                  />
-                </div>
-              )}
+              <CodeGeneratorOptions
+                technology={codeGeneratorType}
+                codeFormat={codeFormat}
+                onFormatChange={setCodeFormat}
+                withStyledBorders={withStyledBorders}
+                onStyledBordersChange={setWithStyledBorders}
+                withTailwind={withTailwind}
+                onTailwindChange={setWithTailwind}
+                hasVerticalItems={hasVerticalItems}
+                className="flex flex-col gap-4"
+              />
               <CodeOutput
                 code={generatedCode}
                 language={codeFormat === 'html' || codeGeneratorType === 'raw-css' ? 'html' : 'tsx'}

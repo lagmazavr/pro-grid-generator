@@ -32,9 +32,9 @@ export function generateMantineCode(gridState: GridState, options: GeneratorOpti
         const itemNumber = index + 1
         const span = Math.round(item.colSpan * columnRatio)
         const styleProps = borderStyle ? ` style={{ ${borderStyle} }}` : ''
-        return `        <Grid.Col span={${span}}${styleProps}>
-          Item ${itemNumber}
-        </Grid.Col>`
+        return `      <Grid.Col span={${span}}${styleProps}>
+        Item ${itemNumber}
+      </Grid.Col>`
       })
       .join('\n')
 

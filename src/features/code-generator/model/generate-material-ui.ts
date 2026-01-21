@@ -158,11 +158,11 @@ export default MyGrid;`
           gridRowStart: ${item.rowStart},
           gridRowEnd: ${rowEnd},
         }`
-        return `      <Grid
+        return `      <Card
         sx={${sxContent}}
       >
         Item ${itemNumber}
-      </Grid>`
+      </Card>`
       }
     })
     .join('\n')
@@ -191,17 +191,20 @@ ${gridItems}
 export default MyGrid;`
   }
   return `${header}
-import { Grid } from '@mui/material'
+import { Box, Card } from '@mui/material'
 
 const MyGrid = () => {
   return (
-    <Grid
-      container
-      spacing={${spacing}}
-      ${containerSx}
+    <Box
+      sx={{
+        display: 'grid',
+        gridTemplateColumns: \`repeat(${config.columns}, 1fr)\`,
+        gridTemplateRows: \`repeat(${config.rows}, 1fr)\`,
+        gap: \`${config.gap}px\`,
+      }}
     >
 ${gridItems}
-    </Grid>
+    </Box>
   )
 }
 

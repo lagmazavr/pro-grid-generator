@@ -3,6 +3,7 @@
     "delete": "Delete",
     "deleteGridItem": "Delete grid item",
     "copy": "Copy",
+    "copied": "Copied",
     "columns": "Columns",
     "rows": "Rows",
     "gap": "Gap (px)",

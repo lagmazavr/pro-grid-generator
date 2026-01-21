@@ -31,10 +31,20 @@ export function generateAntDesignCode(gridState: GridState, options: GeneratorOp
       .map((item, index) => {
         const itemNumber = index + 1
         const span = Math.round(item.colSpan * columnRatio)
-        const styleProps = borderStyle ? ` style={{ ${borderStyle} }}` : ''
-        return `      <Col span={${span}}${styleProps}>
+        
+        if (!withTailwind) {
+          const divStyle = borderStyle ? ` style={{ ${borderStyle} }}` : ''
+          return `      <Col span={${span}}>
+        <div${divStyle}>
+          Item ${itemNumber}
+        </div>
+      </Col>`
+        } else {
+          const styleProps = borderStyle ? ` style={{ ${borderStyle} }}` : ''
+          return `      <Col span={${span}}${styleProps}>
         Item ${itemNumber}
       </Col>`
+        }
       })
       .join('\n')
 

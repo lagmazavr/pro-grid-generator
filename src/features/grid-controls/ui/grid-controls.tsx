@@ -5,17 +5,11 @@ import { Input, Button } from '@/shared/ui'
 import type { GridConfig } from '@/entities/grid'
 
 interface GridControlsProps {
-  /** Current grid configuration */
   config: GridConfig
-  /** Callback when configuration changes */
   onConfigChange: (config: GridConfig) => void
-  /** Callback to reset the grid */
   onReset?: () => void
-  /** Selected item ID */
   selectedItemId?: string | null
-  /** Callback to delete the selected item */
   onItemDelete?: () => void
-  /** Additional class name */
   className?: string
 }
 

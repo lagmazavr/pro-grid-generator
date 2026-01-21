@@ -3,6 +3,7 @@
     "delete": "Eliminar",
     "deleteGridItem": "Eliminar elemento de cuadrícula",
     "copy": "Copiar",
+    "copied": "Copiado",
     "columns": "Columnas",
     "rows": "Filas",
     "gap": "Espaciado (px)",

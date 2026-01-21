@@ -1,21 +1,20 @@
 'use client'
 
-import { useRef, useEffect } from 'react'
+import { useRef, useEffect, useState } from 'react'
 import { useTranslations } from 'next-intl'
+import { Check } from 'lucide-react'
 import { cn } from '@/shared/lib'
 
 interface CodeOutputProps {
-  /** Code to display */
   code: string
-  /** Language label */
   language?: string
-  /** Additional class name */
   className?: string
 }
 
 function CodeOutput({ code, language = 'tsx', className }: CodeOutputProps) {
   const t = useTranslations()
   const preRef = useRef<HTMLPreElement>(null)
+  const [copied, setCopied] = useState(false)
 
   useEffect(() => {
     if (preRef.current) {
@@ -23,8 +22,10 @@ function CodeOutput({ code, language = 'tsx', className }: CodeOutputProps) {
     }
   }, [code])
 
-  const handleCopy = () => {
-    navigator.clipboard.writeText(code)
+  const handleCopy = async () => {
+    await navigator.clipboard.writeText(code)
+    setCopied(true)
+    setTimeout(() => setCopied(false), 2000)
   }
 
   return (
@@ -35,9 +36,16 @@ function CodeOutput({ code, language = 'tsx', className }: CodeOutputProps) {
         </span>
         <button
           onClick={handleCopy}
-          className="cursor-pointer text-xs text-muted-foreground hover:text-foreground transition-colors px-2 py-1 rounded hover:bg-accent/50"
+          className="cursor-pointer text-xs text-muted-foreground hover:text-foreground transition-colors px-2 py-1 rounded hover:bg-accent/50 flex items-center gap-1.5"
         >
-          {t('common.copy')}
+          {copied ? (
+            <>
+              <Check className="w-3.5 h-3.5" />
+              {t('common.copied') || 'Copied'}
+            </>
+          ) : (
+            t('common.copy')
+          )}
         </button>
       </div>
       <pre

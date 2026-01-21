@@ -35,7 +35,7 @@ export function generateTailwindGridRowsClass(rows: number): string {
 }
 
 export function generateBorderStyle(withStyledBorders: boolean): string {
-  return withStyledBorders ? "border: '1px solid #4a5565'," : ''
+  return withStyledBorders ? "border: '1px solid #4a5565'" : ''
 }
 
 export function generateBorderCSS(withStyledBorders: boolean): string {
