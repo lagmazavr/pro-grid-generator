@@ -5,6 +5,14 @@ import './globals.css'
 export const metadata: Metadata = {
   title: 'Pro Grid Generator',
   description: 'Visual grid editor for multiple frameworks and CSS approaches',
+  icons: {
+    icon: [
+      { url: '/favicon.svg', type: 'image/svg+xml' },
+    ],
+    apple: [
+      { url: '/favicon.svg', type: 'image/svg+xml' },
+    ],
+  },
 }
 
 export default function RootLayout({

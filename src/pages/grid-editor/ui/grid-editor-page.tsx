@@ -20,7 +20,8 @@ import { GridControls } from '@/features/grid-controls'
 import { LanguageToggle } from '@/features/language-toggle'
 import { ThemeToggle } from '@/features/theme-toggle'
 import { DEFAULT_TECHNOLOGY, type Technology } from '@/shared/types/routing'
-import { Card, CardContent } from '@/shared/ui'
+import { Card, CardContent, Logo } from '@/shared/ui'
+import { AppFooter } from '@/widgets/app-footer'
 import { GridCanvas } from '@/widgets/grid-canvas'
 import { TechnologySelector } from '@/widgets/technology-selector'
 import { useTranslations } from 'next-intl'
@@ -213,7 +214,8 @@ function GridEditorPage({ technology: initialTechnology }: GridEditorPageProps) 
       <header className="border-b border-border bg-card/50 backdrop-blur supports-[backdrop-filter]:bg-card/30">
         <div className="container mx-auto px-6 py-5">
           <div className="flex items-start justify-between">
-            <div>
+            <div className="flex items-center gap-3">
+              <Logo size={32} />
               <h1 className="text-3xl font-bold text-foreground tracking-tight">
                 {t('header.title')}
               </h1>
@@ -284,6 +286,7 @@ function GridEditorPage({ technology: initialTechnology }: GridEditorPageProps) 
           </Card>
         </div>
       </main>
+      <AppFooter />
     </div>
   )
 }
