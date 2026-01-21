@@ -17,6 +17,7 @@ import {
 } from '@/features/code-generator'
 import { Card, CardHeader, CardTitle, CardContent } from '@/shared/ui'
 import { Button, Checkbox } from '@/shared/ui'
+import { ThemeToggle } from '@/features/theme-toggle'
 import {
   createDefaultGridState,
   generateGridItemId,
@@ -138,10 +139,15 @@ function GridEditorPage() {
       {/* Header */}
       <header className="border-b border-border bg-card/50 backdrop-blur supports-[backdrop-filter]:bg-card/30">
         <div className="container mx-auto px-6 py-5">
-          <h1 className="text-3xl font-bold text-foreground tracking-tight">Grid Generator</h1>
-          <p className="text-sm text-muted-foreground mt-2">
-            Visual grid editor for multiple frameworks and CSS approaches
-          </p>
+          <div className="flex items-start justify-between">
+            <div>
+              <h1 className="text-3xl font-bold text-foreground tracking-tight">Grid Generator</h1>
+              <p className="text-sm text-muted-foreground mt-2">
+                Visual grid editor for multiple frameworks and CSS approaches
+              </p>
+            </div>
+            <ThemeToggle />
+          </div>
         </div>
       </header>
 
