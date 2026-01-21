@@ -29,9 +29,9 @@ export function createGridItem(
  */
 export function createDefaultGridConfig(): GridConfig {
   return {
-    columns: 12,
-    rows: 6,
-    gap: 16,
+    columns: 6,
+    rows: 4,
+    gap: 8,
   }
 }
 

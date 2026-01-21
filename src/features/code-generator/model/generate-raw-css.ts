@@ -1,39 +1,67 @@
 /**
- * Raw CSS code generator
+ * CSS Grid code generator
  * Generates pure CSS Grid code with HTML markup
  * No framework dependencies - just vanilla CSS Grid
  */
 
 import type { GridState } from '@/entities/grid'
+import {
+  sortGridItems,
+  generateBorderStyle,
+  generateBorderCSS,
+  calculateGridItemEnds,
+} from './utils'
+
+interface GeneratorOptions {
+  withStyledBorders?: boolean
+}
 
 /**
- * Generates raw CSS Grid code from grid state
+ * Generates CSS Grid code from grid state
  * Uses pure CSS Grid with HTML and CSS
  */
-export function generateRawCSSCode(gridState: GridState, format: 'jsx' | 'html' = 'html'): string {
+export function generateRawCSSCode(
+  gridState: GridState,
+  format: 'jsx' | 'html' = 'html',
+  options: GeneratorOptions = {}
+): string {
+  const { withStyledBorders = true } = options
   const { config, items } = gridState
 
-  // Sort items by row start, then column start for consistent ordering
-  const sortedItems = [...items].sort((a, b) => {
-    if (a.rowStart !== b.rowStart) return a.rowStart - b.rowStart
-    return a.colStart - b.colStart
-  })
+  const sortedItems = sortGridItems(items)
+  const borderStyle = generateBorderStyle(withStyledBorders)
+  const borderCSS = generateBorderCSS(withStyledBorders)
 
   const gridItems = sortedItems
     .map((item, index) => {
       const itemNumber = index + 1
-      const colEnd = item.colStart + item.colSpan
-      const rowEnd = item.rowStart + item.rowSpan
-      const style = `grid-column-start: ${item.colStart}; grid-column-end: ${colEnd}; grid-row-start: ${item.rowStart}; grid-row-end: ${rowEnd};`
+      const { colEnd, rowEnd } = calculateGridItemEnds(item)
       
       if (format === 'jsx') {
+        const baseStyle = `gridColumnStart: ${item.colStart}, gridColumnEnd: ${colEnd}, gridRowStart: ${item.rowStart}, gridRowEnd: ${rowEnd}`
+        const style = borderStyle ? `${baseStyle}, ${borderStyle}` : baseStyle
         return `      <div style={{ ${style} }}>
         Item ${itemNumber}
       </div>`
       }
-      return `    <div style="${style}">
+      return `    <div class="grid-item-${itemNumber}">
       Item ${itemNumber}
     </div>`
+    })
+    .join('\n')
+
+  // Generate CSS classes for grid items (HTML format only)
+  const gridItemStyles = sortedItems
+    .map((item, index) => {
+      const itemNumber = index + 1
+      const { colEnd, rowEnd } = calculateGridItemEnds(item)
+      const borderRule = borderCSS ? `\n      ${borderCSS}` : ''
+      return `    .grid-item-${itemNumber} {
+      grid-column-start: ${item.colStart};
+      grid-column-end: ${colEnd};
+      grid-row-start: ${item.rowStart};
+      grid-row-end: ${rowEnd};${borderRule}
+    }`
     })
     .join('\n')
 
@@ -44,7 +72,7 @@ export function generateRawCSSCode(gridState: GridState, format: 'jsx' | 'html' 
 const MyGrid = () => {
   return (
     <div style={{ display: 'grid', gridTemplateColumns: \`repeat(${config.columns}, 1fr)\`, gridTemplateRows: \`repeat(${config.rows}, 1fr)\`, gap: \`${config.gap}px\` }}>
-      {/* Add grid items here */}
+      {/* Grid items code will appear here */}
     </div>
   )
 }
@@ -102,6 +130,7 @@ export default MyGrid;`
       grid-template-rows: repeat(${config.rows}, 1fr);
       gap: ${config.gap}px;
     }
+${gridItemStyles}
   </style>
 </head>
 <body>

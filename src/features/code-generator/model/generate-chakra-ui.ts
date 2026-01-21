@@ -5,6 +5,11 @@
  */
 
 import type { GridState } from '@/entities/grid'
+import {
+  sortGridItems,
+  hasVerticalItems,
+  calculateGridItemEnds,
+} from './utils'
 
 /**
  * Generates Chakra UI Grid code from grid state
@@ -13,18 +18,12 @@ import type { GridState } from '@/entities/grid'
 export function generateChakraUICode(gridState: GridState): string {
   const { config, items } = gridState
 
-  // Check if there are any vertical items (rowSpan > 1)
-  const hasVerticalItems = items.some(item => item.rowSpan > 1)
-
-  // Convert gap to Chakra UI spacing (Chakra UI spacing is typically 4px units)
+  const hasVertical = hasVerticalItems(items)
   const gap = Math.round(config.gap / 4) || 4
 
   // If no vertical items, use Chakra UI's native grid system
-  if (!hasVerticalItems && items.length > 0) {
-    const sortedItems = [...items].sort((a, b) => {
-      if (a.rowStart !== b.rowStart) return a.rowStart - b.rowStart
-      return a.colStart - b.colStart
-    })
+  if (!hasVertical && items.length > 0) {
+    const sortedItems = sortGridItems(items)
 
     const gridItems = sortedItems
       .map((item, index) => {
@@ -55,13 +54,13 @@ const MyGrid = () => {
   return (
     <Grid
       style={{
-        display: 'grid',
-        gridTemplateColumns: \`repeat(${config.columns}, 1fr)\`,
-        gridTemplateRows: \`repeat(${config.rows}, 1fr)\`,
-        gap: \`${config.gap}px\`,
-      }}
+          display: 'grid',
+          gridTemplateColumns: \`repeat(${config.columns}, 1fr)\`,
+          gridTemplateRows: \`repeat(${config.rows}, 1fr)\`,
+          gap: \`${config.gap}px\`,
+        }}
     >
-      {/* Add grid items here */}
+      {/* Grid items code will appear here */}
     </Grid>
   )
 }
@@ -69,24 +68,19 @@ const MyGrid = () => {
 export default MyGrid;`
   }
 
-  // Sort items by row start, then column start for consistent ordering
-  const sortedItems = [...items].sort((a, b) => {
-    if (a.rowStart !== b.rowStart) return a.rowStart - b.rowStart
-    return a.colStart - b.colStart
-  })
+  const sortedItems = sortGridItems(items)
 
   const gridItems = sortedItems
     .map((item, index) => {
       const itemNumber = index + 1
-      const colEnd = item.colStart + item.colSpan
-      const rowEnd = item.rowStart + item.rowSpan
+      const { colEnd, rowEnd } = calculateGridItemEnds(item)
       return `      <GridItem
         style={{
-          gridColumnStart: ${item.colStart},
-          gridColumnEnd: ${colEnd},
-          gridRowStart: ${item.rowStart},
-          gridRowEnd: ${rowEnd},
-        }}
+            gridColumnStart: ${item.colStart},
+            gridColumnEnd: ${colEnd},
+            gridRowStart: ${item.rowStart},
+            gridRowEnd: ${rowEnd},
+          }}
       >
         Item ${itemNumber}
       </GridItem>`
@@ -99,11 +93,11 @@ const MyGrid = () => {
   return (
     <Grid
       style={{
-        display: 'grid',
-        gridTemplateColumns: \`repeat(${config.columns}, 1fr)\`,
-        gridTemplateRows: \`repeat(${config.rows}, 1fr)\`,
-        gap: \`${config.gap}px\`,
-      }}
+          display: 'grid',
+          gridTemplateColumns: \`repeat(${config.columns}, 1fr)\`,
+          gridTemplateRows: \`repeat(${config.rows}, 1fr)\`,
+          gap: \`${config.gap}px\`,
+        }}
     >
 ${gridItems}
     </Grid>

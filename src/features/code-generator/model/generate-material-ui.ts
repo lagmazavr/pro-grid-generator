@@ -5,46 +5,86 @@
  */
 
 import type { GridState } from '@/entities/grid'
+import {
+  sortGridItems,
+  hasVerticalItems,
+  generateTailwindGridClasses,
+  generateTailwindGapClass,
+  generateTailwindGridColsClass,
+  generateTailwindGridRowsClass,
+  generateBorderStyle,
+  calculateGridItemEnds,
+} from './utils'
+
+interface GeneratorOptions {
+  withStyledBorders?: boolean
+  withTailwind?: boolean
+}
 
 /**
  * Generates Material UI Grid code from grid state
  * Uses Grid container with CSS Grid styling to match canvas layout exactly
  */
-export function generateMaterialUICode(gridState: GridState): string {
+export function generateMaterialUICode(gridState: GridState, options: GeneratorOptions = {}): string {
+  const { withStyledBorders = true, withTailwind = false } = options
   const { config, items } = gridState
 
-  // Check if there are any vertical items (rowSpan > 1)
-  const hasVerticalItems = items.some(item => item.rowSpan > 1)
-
-  // Convert gap to spacing (Material UI spacing is typically 8px units)
+  const hasVertical = hasVerticalItems(items)
   const spacing = Math.round(config.gap / 8) || 2
 
   // If no vertical items, use Material UI's native 12-column grid system
-  if (!hasVerticalItems && items.length > 0) {
-    const sortedItems = [...items].sort((a, b) => {
-      if (a.rowStart !== b.rowStart) return a.rowStart - b.rowStart
-      return a.colStart - b.colStart
-    })
-
-    // Material UI uses 12 columns, calculate xs prop (each item spans config.columns/12 * colSpan)
+  if (!hasVertical && items.length > 0) {
+    const sortedItems = sortGridItems(items)
     const columnRatio = 12 / config.columns
-    const gridItems = sortedItems
-      .map((item, index) => {
-        const itemNumber = index + 1
-        const xs = Math.round(item.colSpan * columnRatio)
-        return `      <Grid2 size={${xs}}>
+    const borderStyle = generateBorderStyle(withStyledBorders)
+    
+    if (withTailwind) {
+      const gapClass = generateTailwindGapClass(config.gap)
+      const gridItems = sortedItems
+        .map((item, index) => {
+          const itemNumber = index + 1
+          const size = Math.round(item.colSpan * columnRatio)
+          const borderClass = withStyledBorders ? '!border !border-gray-600' : ''
+          const classes = `col-span-${size} ${borderClass}`.trim()
+          return `      <Card className="${classes}">
         Item ${itemNumber}
-      </Grid2>`
-      })
-      .join('\n')
+      </Card>`
+        })
+        .join('\n')
 
-    return `import { Grid2 } from '@mui/material'
+      return `// npm install @mui/material @emotion/react @emotion/styled
+import { Box, Card } from '@mui/material'
 
 const MyGrid = () => {
   return (
-    <Grid2 container spacing={${spacing}}>
+    <Box className="grid grid-cols-12 ${gapClass}">
 ${gridItems}
-    </Grid2>
+    </Box>
+  )
+}
+
+export default MyGrid;`
+    }
+    
+    const gridItems = sortedItems
+      .map((item, index) => {
+        const itemNumber = index + 1
+        const size = Math.round(item.colSpan * columnRatio)
+        const sxProps = borderStyle ? ` sx={{ ${borderStyle} }}` : ''
+        return `      <Grid size={${size}}${sxProps}>
+        Item ${itemNumber}
+      </Grid>`
+      })
+      .join('\n')
+
+    return `// npm install @mui/material @emotion/react @emotion/styled
+import { Grid } from '@mui/material'
+
+const MyGrid = () => {
+  return (
+    <Grid container spacing={${spacing}}>
+${gridItems}
+    </Grid>
   )
 }
 
@@ -52,68 +92,125 @@ export default MyGrid;`
   }
 
   if (items.length === 0) {
-    return `import { Grid2 } from '@mui/material'
+    const gapClass = generateTailwindGapClass(config.gap)
+    const gridColsClass = generateTailwindGridColsClass(config.columns)
+    const gridRowsClass = generateTailwindGridRowsClass(config.rows)
+    const containerSx = withTailwind
+      ? `className="grid ${gridColsClass} ${gridRowsClass} ${gapClass}"`
+      : `sx={{
+          display: 'grid',
+          gridTemplateColumns: \`repeat(${config.columns}, 1fr)\`,
+          gridTemplateRows: \`repeat(${config.rows}, 1fr)\`,
+          gap: \`${config.gap}px\`,
+        }}`
+    
+    if (withTailwind) {
+      return `// npm install @mui/material @emotion/react @emotion/styled
+import { Box } from '@mui/material'
 
 const MyGrid = () => {
   return (
-    <Grid2
+    <Box className="grid ${gridColsClass} ${gridRowsClass} ${gapClass}">
+      {/* Grid items code will appear here */}
+    </Box>
+  )
+}
+
+export default MyGrid;`
+    }
+    return `// npm install @mui/material @emotion/react @emotion/styled
+import { Grid } from '@mui/material'
+
+const MyGrid = () => {
+  return (
+    <Grid
       container
       spacing={${spacing}}
-      sx={{
-        display: 'grid',
-        gridTemplateColumns: \`repeat(${config.columns}, 1fr)\`,
-        gridTemplateRows: \`repeat(${config.rows}, 1fr)\`,
-        gap: \`${config.gap}px\`,
-      }}
+      ${containerSx}
     >
-      {/* Add grid items here */}
-    </Grid2>
+      {/* Grid items code will appear here */}
+    </Grid>
   )
 }
 
 export default MyGrid;`
   }
 
-  // Sort items by row start, then column start for consistent ordering
-  const sortedItems = [...items].sort((a, b) => {
-    if (a.rowStart !== b.rowStart) return a.rowStart - b.rowStart
-    return a.colStart - b.colStart
-  })
-
+  const sortedItems = sortGridItems(items)
+  const borderStyle = generateBorderStyle(withStyledBorders)
+  const gapClass = generateTailwindGapClass(config.gap)
+  const gridColsClass = generateTailwindGridColsClass(config.columns)
+  const gridRowsClass = generateTailwindGridRowsClass(config.rows)
+  
   const gridItems = sortedItems
     .map((item, index) => {
       const itemNumber = index + 1
-      const colEnd = item.colStart + item.colSpan
-      const rowEnd = item.rowStart + item.rowSpan
-      return `      <Grid2
-        sx={{
+      const { colEnd, rowEnd } = calculateGridItemEnds(item)
+      
+      if (withTailwind) {
+        const classes = generateTailwindGridClasses(item, withStyledBorders)
+        return `      <Card className="${classes}">
+        Item ${itemNumber}
+      </Card>`
+      } else {
+        const sxContent = borderStyle
+          ? `{
           gridColumnStart: ${item.colStart},
           gridColumnEnd: ${colEnd},
           gridRowStart: ${item.rowStart},
           gridRowEnd: ${rowEnd},
-        }}
+          ${borderStyle}
+        }`
+          : `{
+          gridColumnStart: ${item.colStart},
+          gridColumnEnd: ${colEnd},
+          gridRowStart: ${item.rowStart},
+          gridRowEnd: ${rowEnd},
+        }`
+        return `      <Grid
+        sx={${sxContent}}
       >
         Item ${itemNumber}
-      </Grid2>`
+      </Grid>`
+      }
     })
     .join('\n')
 
-  return `import { Grid2 } from '@mui/material'
-
-const MyGrid = () => {
-  return (
-    <Grid2
-      container
-      spacing={${spacing}}
-      sx={{
+  const containerSx = withTailwind
+    ? `className="grid ${gridColsClass} ${gridRowsClass} ${gapClass}"`
+    : `sx={{
         display: 'grid',
         gridTemplateColumns: \`repeat(${config.columns}, 1fr)\`,
         gridTemplateRows: \`repeat(${config.rows}, 1fr)\`,
         gap: \`${config.gap}px\`,
-      }}
+      }}`
+
+  if (withTailwind) {
+    return `// npm install @mui/material @emotion/react @emotion/styled
+import { Box, Card } from '@mui/material'
+
+const MyGrid = () => {
+  return (
+    <Box className="grid ${gridColsClass} ${gridRowsClass} ${gapClass}">
+${gridItems}
+    </Box>
+  )
+}
+
+export default MyGrid;`
+  }
+  return `// npm install @mui/material @emotion/react @emotion/styled
+import { Grid } from '@mui/material'
+
+const MyGrid = () => {
+  return (
+    <Grid
+      container
+      spacing={${spacing}}
+      ${containerSx}
     >
 ${gridItems}
-    </Grid2>
+    </Grid>
   )
 }
 

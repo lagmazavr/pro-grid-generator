@@ -4,35 +4,39 @@
  */
 
 import type { GridState } from '@/entities/grid'
+import {
+  sortGridItems,
+  generateTailwindGridClasses,
+  generateTailwindGapClass,
+  generateTailwindGridColsClass,
+  generateTailwindGridRowsClass,
+} from './utils'
+
+interface GeneratorOptions {
+  withStyledBorders?: boolean
+}
 
 /**
  * Generates Tailwind CSS Grid code from grid state
  * Uses Tailwind utility classes with CSS Grid
  */
-export function generateTailwindCode(gridState: GridState, format: 'jsx' | 'html' = 'jsx'): string {
+export function generateTailwindCode(
+  gridState: GridState,
+  format: 'jsx' | 'html' = 'jsx',
+  options: GeneratorOptions = {}
+): string {
+  const { withStyledBorders = true } = options
   const { config, items } = gridState
 
-  // Convert gap to Tailwind spacing (Tailwind spacing is typically 4px units, but we'll use arbitrary values for precision)
-  const gapClass = config.gap % 4 === 0 ? `gap-${config.gap / 4}` : `gap-[${config.gap}px]`
-  const gridColsClass = `grid-cols-${config.columns}`
-  const gridRowsClass = `grid-rows-${config.rows}`
-
-  // Sort items by row start, then column start for consistent ordering
-  const sortedItems = [...items].sort((a, b) => {
-    if (a.rowStart !== b.rowStart) return a.rowStart - b.rowStart
-    return a.colStart - b.colStart
-  })
+  const gapClass = generateTailwindGapClass(config.gap)
+  const gridColsClass = generateTailwindGridColsClass(config.columns)
+  const gridRowsClass = generateTailwindGridRowsClass(config.rows)
+  const sortedItems = sortGridItems(items)
 
   const gridItems = sortedItems
     .map((item, index) => {
       const itemNumber = index + 1
-      const classes = [
-        `col-span-${item.colSpan}`,
-        `row-span-${item.rowSpan}`,
-        item.colStart > 1 ? `col-start-${item.colStart}` : '',
-        item.rowStart > 1 ? `row-start-${item.rowStart}` : '',
-      ].filter(Boolean).join(' ')
-      
+      const classes = generateTailwindGridClasses(item, withStyledBorders)
       const className = format === 'jsx' ? 'className' : 'class'
       return `      <div ${className}="${classes}">
         Item ${itemNumber}
@@ -80,7 +84,7 @@ ${gridItems}
 const MyGrid = () => {
   return (
     <div className="grid ${gridColsClass} ${gridRowsClass} ${gapClass}">
-      {/* Add grid items here */}
+      {/* Grid items code will appear here */}
     </div>
   )
 }

@@ -16,7 +16,7 @@ import {
   CodeOutput,
 } from '@/features/code-generator'
 import { Card, CardHeader, CardTitle, CardContent } from '@/shared/ui'
-import { Button } from '@/shared/ui'
+import { Button, Checkbox } from '@/shared/ui'
 import {
   createDefaultGridState,
   generateGridItemId,
@@ -45,26 +45,37 @@ function GridEditorPage() {
   const [selectedItemId, setSelectedItemId] = useState<string | null>(null)
   const [codeGeneratorType, setCodeGeneratorType] = useState<CodeGeneratorType>('material-ui')
   const [codeFormat, setCodeFormat] = useState<CodeFormat>('jsx')
+  const [withStyledBorders, setWithStyledBorders] = useState(true)
+  const [withTailwind, setWithTailwind] = useState(false)
+
+  // Check if there are vertical items (rowSpan > 1) to determine if tailwind option should be shown
+  const hasVerticalItems = useMemo(() => {
+    return gridState.items.some(item => item.rowSpan > 1)
+  }, [gridState.items])
 
   // Generate code based on selected generator type and format
   const generatedCode = useMemo(() => {
+    const options = {
+      withStyledBorders,
+      withTailwind,
+    }
     switch (codeGeneratorType) {
       case 'material-ui':
-        return generateMaterialUICode(gridState)
+        return generateMaterialUICode(gridState, options)
       case 'chakra-ui':
         return generateChakraUICode(gridState)
       case 'mantine':
-        return generateMantineCode(gridState)
+        return generateMantineCode(gridState, options)
       case 'ant-design':
-        return generateAntDesignCode(gridState)
+        return generateAntDesignCode(gridState, options)
       case 'raw-css':
-        return generateRawCSSCode(gridState, codeFormat)
+        return generateRawCSSCode(gridState, codeFormat, { withStyledBorders })
       case 'tailwind':
-        return generateTailwindCode(gridState, codeFormat)
+        return generateTailwindCode(gridState, codeFormat, { withStyledBorders })
       default:
-        return generateMaterialUICode(gridState)
+        return generateMaterialUICode(gridState, options)
     }
-  }, [gridState, codeGeneratorType, codeFormat])
+  }, [gridState, codeGeneratorType, codeFormat, withStyledBorders, withTailwind])
 
   // Handle grid config changes
   const handleConfigChange = (config: GridState['config']) => {
@@ -185,7 +196,7 @@ function GridEditorPage() {
                     variant={codeGeneratorType === 'raw-css' ? 'default' : 'outline'}
                     onClick={() => setCodeGeneratorType('raw-css')}
                   >
-                    Raw CSS
+                    CSS Grid
                   </Button>
                   
                   <Button
@@ -243,6 +254,34 @@ function GridEditorPage() {
                   >
                     HTML
                   </Button>
+                </div>
+              )}
+              {(codeGeneratorType === 'material-ui' || codeGeneratorType === 'ant-design' || codeGeneratorType === 'mantine') && (
+                <div className="flex gap-4 mb-2">
+                  <Checkbox
+                    id="with-styled-borders"
+                    checked={withStyledBorders}
+                    onChange={(e) => setWithStyledBorders(e.target.checked)}
+                    label="With styled borders"
+                  />
+                  {hasVerticalItems && (
+                    <Checkbox
+                      id="with-tailwind"
+                      checked={withTailwind}
+                      onChange={(e) => setWithTailwind(e.target.checked)}
+                      label="With tailwind"
+                    />
+                  )}
+                </div>
+              )}
+              {(codeGeneratorType === 'raw-css' || codeGeneratorType === 'tailwind') && (
+                <div className="flex gap-4 mb-2">
+                  <Checkbox
+                    id="with-styled-borders-css"
+                    checked={withStyledBorders}
+                    onChange={(e) => setWithStyledBorders(e.target.checked)}
+                    label="With styled borders"
+                  />
                 </div>
               )}
               <CodeOutput
