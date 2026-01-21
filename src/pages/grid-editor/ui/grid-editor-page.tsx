@@ -148,21 +148,18 @@ function GridEditorPage() {
       {/* Main content */}
       <main className="container mx-auto px-6 py-8">
         <div className="flex flex-col gap-6">
-          {/* Grid controls */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Grid Configuration</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <GridControls config={gridState.config} onConfigChange={handleConfigChange} />
-            </CardContent>
-          </Card>
-
-          {/* Grid canvas */}
+          {/* Grid Canvas */}
           <Card>
             <CardHeader>
               <div className="flex items-center justify-between">
-                <CardTitle>Grid Canvas</CardTitle>
+                <div className="flex flex-col gap-1">
+                  <CardTitle>Grid Canvas</CardTitle>
+                  <p className="text-xs text-muted-foreground">
+                    EN: Click on cells to add items • ES: Haz clic en las celdas para agregar elementos • 
+                    FR: Cliquez sur les cellules pour ajouter des éléments • DE: Klicken Sie auf Zellen, um Elemente hinzuzufügen • 
+                    RU: Нажмите на ячейки, чтобы добавить элементы • ZH: 单击单元格以添加项目
+                  </p>
+                </div>
                 {selectedItemId && (
                   <Button size="sm" variant="destructive" onClick={handleDeleteItem}>
                     Delete
@@ -171,16 +168,24 @@ function GridEditorPage() {
               </div>
             </CardHeader>
             <CardContent className="p-6">
-              <div className="flex justify-center bg-muted/30 rounded-lg p-4">
-                <GridCanvas
-                  gridState={gridState}
-                  containerWidth={800}
-                  containerHeight={600}
-                  onItemClick={handleItemClick}
-                  onEmptyCellClick={handleEmptyCellClick}
-                  onItemChange={handleItemChange}
-                  selectedItemId={selectedItemId}
-                />
+              <div className="flex flex-col gap-6 md:grid md:grid-cols-[0.75fr_2.5fr]">
+                {/* Grid controls */}
+                <div>
+                  <GridControls config={gridState.config} onConfigChange={handleConfigChange} />
+                </div>
+                
+                {/* Grid canvas */}
+                <div className="flex justify-center rounded-lg">
+                  <GridCanvas
+                    gridState={gridState}
+                    containerWidth={800}
+                    containerHeight={600}
+                    onItemClick={handleItemClick}
+                    onEmptyCellClick={handleEmptyCellClick}
+                    onItemChange={handleItemChange}
+                    selectedItemId={selectedItemId}
+                  />
+                </div>
               </div>
             </CardContent>
           </Card>

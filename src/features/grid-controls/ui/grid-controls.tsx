@@ -37,7 +37,7 @@ function GridControls({ config, onConfigChange, className }: GridControlsProps) 
 
   return (
     <div className={className}>
-      <div className="grid grid-cols-3 gap-4">
+      <div className="grid grid-cols-3 md:grid-cols-1 gap-4">
         {/* Columns control */}
         <div className="flex flex-col gap-2">
           <label htmlFor="grid-columns" className="text-sm font-medium text-foreground">
