@@ -1,9 +1,9 @@
 ---
-description: TypeScript, React, and styling conventions for the tailwindgen project
+description: TypeScript, React, and styling conventions for the pro-grid-generator project
 globs:
   - "**/*.tsx"
   - "**/*.ts"
-name: tailwindgen/code-style
+name: pro-grid-generator/code-style
 ---
 
 # Code Style Guidelines
@@ -125,11 +125,11 @@ export { Card }
 ```
 
 ---
-description: Architecture and organizational principles for the tailwindgen project
+description: Architecture and organizational principles for the pro-grid-generator project
 globs:
   - "src/**/*.tsx"
   - "src/**/*.ts"
-name: tailwindgen/methodology
+name: pro-grid-generator/methodology
 ---
 
 # Feature-Sliced Design Methodology
@@ -261,11 +261,11 @@ import { useLocalState } from './use-local-state'
 ```
 
 ---
-description: Framework, libraries, and tooling configuration for the tailwindgen project
+description: Framework, libraries, and tooling configuration for the pro-grid-generator project
 globs:
   - "**/*.tsx"
   - "**/*.ts"
-name: tailwindgen/tech-stack
+name: pro-grid-generator/tech-stack
 ---
 
 # Tech Stack & Tools

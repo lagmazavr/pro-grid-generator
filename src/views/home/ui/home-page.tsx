@@ -6,7 +6,7 @@ function HomePage() {
       <div className="max-w-4xl mx-auto space-y-8">
         <div className="text-center space-y-4">
           <h1 className="text-4xl font-bold text-foreground">
-            Welcome to TailwindGen
+            Welcome to Pro Grid Generator
           </h1>
           <p className="text-xl text-muted-foreground">
             A modern Vite + React + TypeScript project with FSD architecture and shadcn/ui
