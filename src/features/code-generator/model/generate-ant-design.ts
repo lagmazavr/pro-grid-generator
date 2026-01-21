@@ -71,11 +71,11 @@ export default MyGrid;`
     const containerStyle = withTailwind
       ? `className="grid ${gridColsClass} ${gridRowsClass} ${gapClass}"`
       : `style={{
-          display: 'grid',
-          gridTemplateColumns: \`repeat(${config.columns}, 1fr)\`,
-          gridTemplateRows: \`repeat(${config.rows}, 1fr)\`,
-          gap: \`${config.gap}px\`,
-        }}`
+        display: 'grid',
+        gridTemplateColumns: \`repeat(${config.columns}, 1fr)\`,
+        gridTemplateRows: \`repeat(${config.rows}, 1fr)\`,
+        gap: \`${config.gap}px\`,
+      }}`
     
     const containerTag = withTailwind
       ? `<div ${containerStyle}>`
