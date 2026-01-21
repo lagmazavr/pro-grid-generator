@@ -1,10 +1,3 @@
-/**
- * Ant Design code generator
- * Generates Ant Design code using CSS Grid with Card components
- * Since Ant Design's Row/Col doesn't support multi-row spanning items,
- * we use CSS Grid which provides full control over grid positioning
- */
-
 import type { GridState } from '@/entities/grid'
 import {
   sortGridItems,
@@ -22,18 +15,14 @@ interface GeneratorOptions {
   withTailwind?: boolean
 }
 
-/**
- * Generates Ant Design code from grid state
- * Uses CSS Grid layout with Ant Design Card components
- * This approach supports complex layouts with multi-row and multi-column items
- */
 export function generateAntDesignCode(gridState: GridState, options: GeneratorOptions = {}): string {
   const { withStyledBorders = true, withTailwind = false } = options
   const { config, items } = gridState
 
+  const header = `// Quickstart: https://ant.design/docs/react/introduce`
+
   const hasVertical = hasVerticalItems(items)
 
-  // If no vertical items, use Ant Design's native Row/Col system
   if (!hasVertical && items.length > 0) {
     const sortedItems = sortGridItems(items)
     const columnRatio = 24 / config.columns
@@ -49,8 +38,7 @@ export function generateAntDesignCode(gridState: GridState, options: GeneratorOp
       })
       .join('\n')
 
-    return `// npm install antd --save
-import React from 'react'
+    return `${header}
 import { Row, Col } from 'antd'
 
 const MyGrid = () => {
@@ -82,8 +70,7 @@ export default MyGrid;`
       : `<div
       ${containerStyle}
     >`
-    return `// npm install antd --save
-import React from 'react'
+    return `${header}
 import { Card } from 'antd'
 
 const MyGrid = () => {
@@ -151,8 +138,7 @@ export default MyGrid;`
     : `<div
       ${containerStyle}
     >`
-  return `// npm install antd --save
-import React from 'react'
+  return `${header}
 import { Card } from 'antd'
 
 const MyGrid = () => {

@@ -1,9 +1,3 @@
-/**
- * Material UI code generator
- * Generates Material UI code using Grid component with CSS Grid override
- * Matches exact layout from grid canvas using CSS Grid positioning
- */
-
 import type { GridState } from '@/entities/grid'
 import {
   sortGridItems,
@@ -21,18 +15,15 @@ interface GeneratorOptions {
   withTailwind?: boolean
 }
 
-/**
- * Generates Material UI Grid code from grid state
- * Uses Grid container with CSS Grid styling to match canvas layout exactly
- */
 export function generateMaterialUICode(gridState: GridState, options: GeneratorOptions = {}): string {
   const { withStyledBorders = true, withTailwind = false } = options
   const { config, items } = gridState
 
+  const header = `// Quickstart: https://mui.com/material-ui/getting-started/installation/`
+
   const hasVertical = hasVerticalItems(items)
   const spacing = Math.round(config.gap / 8) || 2
 
-  // If no vertical items, use Material UI's native 12-column grid system
   if (!hasVertical && items.length > 0) {
     const sortedItems = sortGridItems(items)
     const columnRatio = 12 / config.columns
@@ -52,7 +43,7 @@ export function generateMaterialUICode(gridState: GridState, options: GeneratorO
         })
         .join('\n')
 
-      return `// npm install @mui/material @emotion/react @emotion/styled
+      return `${header}
 import { Box, Card } from '@mui/material'
 
 const MyGrid = () => {
@@ -77,7 +68,7 @@ export default MyGrid;`
       })
       .join('\n')
 
-    return `// npm install @mui/material @emotion/react @emotion/styled
+    return `${header}
 import { Grid } from '@mui/material'
 
 const MyGrid = () => {
@@ -105,7 +96,7 @@ export default MyGrid;`
         }}`
     
     if (withTailwind) {
-      return `// npm install @mui/material @emotion/react @emotion/styled
+      return `${header}
 import { Box } from '@mui/material'
 
 const MyGrid = () => {
@@ -118,7 +109,7 @@ const MyGrid = () => {
 
 export default MyGrid;`
     }
-    return `// npm install @mui/material @emotion/react @emotion/styled
+    return `${header}
 import { Grid } from '@mui/material'
 
 const MyGrid = () => {
@@ -186,7 +177,7 @@ export default MyGrid;`
       }}`
 
   if (withTailwind) {
-    return `// npm install @mui/material @emotion/react @emotion/styled
+    return `${header}
 import { Box, Card } from '@mui/material'
 
 const MyGrid = () => {
@@ -199,7 +190,7 @@ ${gridItems}
 
 export default MyGrid;`
   }
-  return `// npm install @mui/material @emotion/react @emotion/styled
+  return `${header}
 import { Grid } from '@mui/material'
 
 const MyGrid = () => {

@@ -1,8 +1,3 @@
-/**
- * Tailwind CSS code generator
- * Generates React/TSX code using Tailwind CSS utility classes for CSS Grid
- */
-
 import type { GridState } from '@/entities/grid'
 import {
   sortGridItems,
@@ -16,10 +11,6 @@ interface GeneratorOptions {
   withStyledBorders?: boolean
 }
 
-/**
- * Generates Tailwind CSS Grid code from grid state
- * Uses Tailwind utility classes with CSS Grid
- */
 export function generateTailwindCode(
   gridState: GridState,
   format: 'jsx' | 'html' = 'jsx',
@@ -77,9 +68,10 @@ ${gridItems}
 </html>`
   }
 
-  // JSX format
+  const header = `// Quickstart: https://tailwindcss.com/docs/installation/using-vite`
+
   if (items.length === 0) {
-    return `import React from 'react'
+    return `${header}
 
 const MyGrid = () => {
   return (
@@ -92,7 +84,7 @@ const MyGrid = () => {
 export default MyGrid;`
   }
 
-  return `import React from 'react'
+  return `${header}
 
 const MyGrid = () => {
   return (

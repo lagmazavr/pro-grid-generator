@@ -20,17 +20,15 @@ function Checkbox({ className, label, id, ...props }: CheckboxProps) {
           data-slot="checkbox"
           className={cn(
             "peer h-5 w-5 cursor-pointer transition-all appearance-none rounded",
-            // Unselected: dark bg, light border
-            "bg-input/30 border border-input",
-            // Selected: white bg, black border
-            "checked:bg-white checked:border-black",
+            "bg-input/80 border border-input",
+            "checked:bg-primary checked:border-primary",
             "focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px]",
             "disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50",
             className
           )}
           {...props}
         />
-        <span className="absolute inset-0 flex items-center justify-center text-black opacity-0 peer-checked:opacity-100 pointer-events-none">
+        <span className="absolute inset-0 flex items-center justify-center text-primary-foreground opacity-0 peer-checked:opacity-100 pointer-events-none">
           <svg
             xmlns="http://www.w3.org/2000/svg"
             className="h-3.5 w-3.5"

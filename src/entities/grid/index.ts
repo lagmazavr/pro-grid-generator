@@ -1,9 +1,3 @@
-/**
- * Grid entity - single entry point
- * Exports all public types and utilities
- */
-
-// Types
 export type {
   GridConfig,
   GridItem,
@@ -11,7 +5,6 @@ export type {
   GridPreset,
 } from './model/types'
 
-// Utilities
 export {
   createGridItem,
   createDefaultGridConfig,

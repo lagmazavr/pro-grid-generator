@@ -1,3 +1,5 @@
+'use client'
+
 import { useEffect } from 'react'
 import { Button } from '@/shared/ui'
 
@@ -5,12 +7,10 @@ const THEME_STORAGE_KEY = 'theme-preference'
 
 function ThemeToggle() {
   useEffect(() => {
-    // Load theme from localStorage on mount
     const savedTheme = localStorage.getItem(THEME_STORAGE_KEY)
     if (savedTheme === 'light') {
       document.documentElement.classList.remove('dark')
     } else {
-      // Default to dark
       document.documentElement.classList.add('dark')
     }
   }, [])

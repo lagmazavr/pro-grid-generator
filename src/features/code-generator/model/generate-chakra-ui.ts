@@ -1,9 +1,3 @@
-/**
- * Chakra UI code generator
- * Generates Chakra UI code using Grid and GridItem components
- * Chakra UI Grid natively supports rowSpan and colSpan, making it perfect for complex layouts
- */
-
 import type { GridState } from '@/entities/grid'
 import {
   sortGridItems,
@@ -11,17 +5,12 @@ import {
   calculateGridItemEnds,
 } from './utils'
 
-/**
- * Generates Chakra UI Grid code from grid state
- * Uses Grid container with GridItem components that support rowSpan and colSpan
- */
 export function generateChakraUICode(gridState: GridState): string {
   const { config, items } = gridState
 
   const hasVertical = hasVerticalItems(items)
   const gap = Math.round(config.gap / 4) || 4
 
-  // If no vertical items, use Chakra UI's native grid system
   if (!hasVertical && items.length > 0) {
     const sortedItems = sortGridItems(items)
 

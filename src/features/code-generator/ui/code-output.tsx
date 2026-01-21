@@ -1,9 +1,7 @@
-/**
- * Code output UI component
- * Displays generated code with syntax highlighting
- */
+'use client'
 
 import { useRef, useEffect } from 'react'
+import { useTranslations } from 'next-intl'
 import { cn } from '@/shared/lib'
 
 interface CodeOutputProps {
@@ -15,13 +13,10 @@ interface CodeOutputProps {
   className?: string
 }
 
-/**
- * CodeOutput - Displays code with syntax highlighting
- */
 function CodeOutput({ code, language = 'tsx', className }: CodeOutputProps) {
+  const t = useTranslations()
   const preRef = useRef<HTMLPreElement>(null)
 
-  // Scroll to top when code changes
   useEffect(() => {
     if (preRef.current) {
       preRef.current.scrollTop = 0
@@ -40,9 +35,9 @@ function CodeOutput({ code, language = 'tsx', className }: CodeOutputProps) {
         </span>
         <button
           onClick={handleCopy}
-          className="text-xs text-muted-foreground hover:text-foreground transition-colors px-2 py-1 rounded hover:bg-accent/50"
+          className="cursor-pointer text-xs text-muted-foreground hover:text-foreground transition-colors px-2 py-1 rounded hover:bg-accent/50"
         >
-          Copy
+          {t('common.copy')}
         </button>
       </div>
       <pre

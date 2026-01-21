@@ -1,9 +1,7 @@
-/**
- * Grid controls feature
- * UI controls for adjusting grid configuration (columns, rows, gap)
- */
+'use client'
 
-import { Input } from '@/shared/ui'
+import { useTranslations } from 'next-intl'
+import { Input, Button } from '@/shared/ui'
 import type { GridConfig } from '@/entities/grid'
 
 interface GridControlsProps {
@@ -11,81 +9,115 @@ interface GridControlsProps {
   config: GridConfig
   /** Callback when configuration changes */
   onConfigChange: (config: GridConfig) => void
+  /** Callback to reset the grid */
+  onReset?: () => void
+  /** Selected item ID */
+  selectedItemId?: string | null
+  /** Callback to delete the selected item */
+  onItemDelete?: () => void
   /** Additional class name */
   className?: string
 }
 
-/**
- * GridControls - Controls for grid configuration
- * Allows users to adjust columns, rows, and gap
- */
-function GridControls({ config, onConfigChange, className }: GridControlsProps) {
+function GridControls({ config, onConfigChange, onReset, selectedItemId, onItemDelete, className }: GridControlsProps) {
+  const t = useTranslations()
+  
   const handleColumnsChange = (value: string) => {
-    const columns = Math.max(1, Math.min(24, parseInt(value, 10) || 1))
+    if (value === '') {
+      onConfigChange({ ...config, columns: 0 })
+      return
+    }
+    const numValue = parseInt(value, 10)
+    if (isNaN(numValue)) return
+    const columns = Math.max(0, Math.min(12, numValue))
     onConfigChange({ ...config, columns })
   }
 
   const handleRowsChange = (value: string) => {
-    const rows = Math.max(1, Math.min(24, parseInt(value, 10) || 1))
+    if (value === '') {
+      onConfigChange({ ...config, rows: 0 })
+      return
+    }
+    const numValue = parseInt(value, 10)
+    if (isNaN(numValue)) return
+    const rows = Math.max(0, Math.min(12, numValue))
     onConfigChange({ ...config, rows })
   }
 
   const handleGapChange = (value: string) => {
-    const gap = Math.max(0, Math.min(100, parseInt(value, 10) || 0))
+    if (value === '') {
+      onConfigChange({ ...config, gap: 0 })
+      return
+    }
+    const numValue = parseInt(value, 10)
+    if (isNaN(numValue)) return
+    const gap = Math.max(0, Math.min(100, numValue))
     onConfigChange({ ...config, gap })
   }
 
   return (
     <div className={className}>
-      <div className="grid grid-cols-3 md:grid-cols-1 gap-4">
-        {/* Columns control */}
-        <div className="flex flex-col gap-2">
-          <label htmlFor="grid-columns" className="text-sm font-medium text-foreground">
-            Columns
-          </label>
-          <Input
-            id="grid-columns"
-            type="number"
-            min={1}
-            max={24}
-            value={config.columns}
-            onChange={(e) => handleColumnsChange(e.target.value)}
-            className="w-full"
-          />
-        </div>
+      <div className='flex flex-col gap-4'>
+        <div className="grid grid-cols-3 md:grid-cols-1 gap-4">
+          <div className="flex flex-col gap-2">
+            <label htmlFor="grid-columns" className="text-sm font-medium text-foreground">
+              {t('common.columns')}
+            </label>
+            <Input
+              id="grid-columns"
+              type="number"
+              min={0}
+              max={12}
+              value={config.columns}
+              onChange={(e) => handleColumnsChange(e.target.value)}
+              className="w-full"
+            />
+          </div>
 
-        {/* Rows control */}
-        <div className="flex flex-col gap-2">
-          <label htmlFor="grid-rows" className="text-sm font-medium text-foreground">
-            Rows
-          </label>
-          <Input
-            id="grid-rows"
-            type="number"
-            min={1}
-            max={24}
-            value={config.rows}
-            onChange={(e) => handleRowsChange(e.target.value)}
-            className="w-full"
-          />
-        </div>
+          <div className="flex flex-col gap-2">
+            <label htmlFor="grid-rows" className="text-sm font-medium text-foreground">
+              {t('common.rows')}
+            </label>
+            <Input
+              id="grid-rows"
+              type="number"
+              min={0}
+              max={12}
+              value={config.rows}
+              onChange={(e) => handleRowsChange(e.target.value)}
+              className="w-full"
+            />
+          </div>
 
-        {/* Gap control */}
-        <div className="flex flex-col gap-2">
-          <label htmlFor="grid-gap" className="text-sm font-medium text-foreground">
-            Gap (px)
-          </label>
-          <Input
-            id="grid-gap"
-            type="number"
-            min={0}
-            max={100}
-            value={config.gap}
-            onChange={(e) => handleGapChange(e.target.value)}
-            className="w-full"
-          />
+          <div className="flex flex-col gap-2">
+            <label htmlFor="grid-gap" className="text-sm font-medium text-foreground">
+              {t('common.gap')}
+            </label>
+            <Input
+              id="grid-gap"
+              type="number"
+              min={0}
+              max={100}
+              value={config.gap}
+              onChange={(e) => handleGapChange(e.target.value)}
+              className="w-full"
+            />
+          </div>
         </div>
+        {selectedItemId && onItemDelete && (
+          <Button 
+            size="sm" 
+            variant="destructive" 
+            onClick={onItemDelete} 
+            className="w-full cursor-pointer"
+          >
+            {t('common.deleteGridItem')}
+          </Button>
+        )}
       </div>
+      <Button size="sm" variant="default" onClick={onReset} className="w-full cursor-pointer mb-2">
+        {t('common.reset')}
+      </Button>
     </div>
   )
 }

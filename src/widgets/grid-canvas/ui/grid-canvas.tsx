@@ -1,39 +1,24 @@
-/**
- * GridCanvas widget
- * Visual grid editor with CSS Grid rendering and grid lines
- * Supports drag and resize functionality
- */
+'use client'
 
 import { useMemo, useState, useRef, useCallback, useEffect } from 'react'
+import { useTranslations } from 'next-intl'
 import { cn } from '@/shared/lib'
 import type { GridState, GridItem } from '@/entities/grid'
 import { itemsOverlap, isValidGridItem } from '@/entities/grid'
 
 interface GridCanvasProps {
-  /** Grid state to render */
   gridState: GridState
-  /** Canvas container width */
   containerWidth?: number
-  /** Canvas container height */
   containerHeight?: number
-  /** Callback when an item is clicked */
   onItemClick?: (itemId: string) => void
-  /** Callback when an empty cell is clicked */
   onEmptyCellClick?: (col: number, row: number) => void
-  /** Callback when an item is moved or resized */
   onItemChange?: (itemId: string, item: GridItem) => void
-  /** Selected item ID */
   selectedItemId?: string | null
-  /** Class name for the canvas container */
   className?: string
 }
 
 type ResizeHandle = 'nw' | 'ne' | 'sw' | 'se' | 'n' | 's' | 'e' | 'w' | null
 
-/**
- * GridCanvas - Visual grid editor widget
- * Renders a CSS Grid-based canvas with visual grid lines and items
- */
 function GridCanvas({
   gridState,
   containerWidth = 800,
@@ -44,6 +29,7 @@ function GridCanvas({
   selectedItemId,
   className,
 }: GridCanvasProps) {
+  const t = useTranslations()
   const { config, items } = gridState
   const containerRef = useRef<HTMLDivElement>(null)
   const gridRef = useRef<HTMLDivElement>(null)
@@ -52,10 +38,8 @@ function GridCanvas({
   const [dragStart, setDragStart] = useState<{ colStart: number; rowStart: number } | null>(null)
   const [resizeStart, setResizeStart] = useState<{ item: GridItem } | null>(null)
 
-  // Calculate cell dimensions based on actual grid element
   const cellDimensions = useMemo(() => {
     if (!gridRef.current) {
-      // Fallback calculation if grid not mounted yet
       const cellWidth = (containerWidth - 16 - config.gap * (config.columns - 1)) / config.columns
       const cellHeight = (containerHeight - 16 - config.gap * (config.rows - 1)) / config.rows
       return { cellWidth, cellHeight, gap: config.gap, padding: 8 }
@@ -71,7 +55,6 @@ function GridCanvas({
     return { cellWidth, cellHeight, gap: config.gap, padding }
   }, [containerWidth, containerHeight, config.columns, config.rows, config.gap])
 
-  // Check if a cell is occupied by any item
   const isCellOccupied = useMemo(() => {
     const occupied = new Set<string>()
     items.forEach((item) => {
@@ -84,7 +67,6 @@ function GridCanvas({
     return occupied
   }, [items])
 
-  // Check if a proposed item position/size would collide with other items (excluding the item being moved/resized)
   const wouldCollide = useCallback(
     (proposedItem: GridItem, excludeItemId?: string): boolean => {
       if (!isValidGridItem(proposedItem, config)) {
@@ -99,7 +81,6 @@ function GridCanvas({
     [items, config]
   )
 
-  // Convert pixel coordinates to grid position
   const pixelToGrid = useCallback(
     (x: number, y: number): { col: number; row: number } | null => {
       const gridElement = gridRef.current
@@ -120,7 +101,6 @@ function GridCanvas({
     [cellDimensions, config.columns, config.rows]
   )
 
-  // Map item IDs to item numbers (sorted by row start, then column start)
   const itemNumberMap = useMemo(() => {
     const sortedItems = [...items].sort((a, b) => {
       if (a.rowStart !== b.rowStart) return a.rowStart - b.rowStart
@@ -133,7 +113,6 @@ function GridCanvas({
     return map
   }, [items])
 
-  // Calculate item styles for positioning
   const itemStyles = useMemo(() => {
     return items.map((item) => {
       const left = cellDimensions.padding + (item.colStart - 1) * (cellDimensions.cellWidth + cellDimensions.gap)
@@ -154,7 +133,6 @@ function GridCanvas({
     })
   }, [items, cellDimensions])
 
-  // Handle cell click
   const handleCellClick = (col: number, row: number) => {
     const cellKey = `${col}-${row}`
     if (!isCellOccupied.has(cellKey)) {
@@ -162,7 +140,6 @@ function GridCanvas({
     }
   }
 
-  // Handle mouse down on item
   const handleItemMouseDown = useCallback(
     (e: React.MouseEvent, item: GridItem) => {
       if (e.button !== 0) return // Only handle left mouse button
@@ -179,10 +156,8 @@ function GridCanvas({
     []
   )
 
-  // Handle mouse move for dragging
   const handleMouseMove = useCallback(
     (e: MouseEvent) => {
-      // Handle drag
       if (draggedItemId && dragStart) {
         const gridPos = pixelToGrid(e.clientX, e.clientY)
         if (!gridPos) return
@@ -193,7 +168,6 @@ function GridCanvas({
         const newColStart = Math.max(1, Math.min(gridPos.col, config.columns - item.colSpan + 1))
         const newRowStart = Math.max(1, Math.min(gridPos.row, config.rows - item.rowSpan + 1))
 
-        // Check if the new position would collide with other items
         const proposedItem: GridItem = {
           ...item,
           colStart: newColStart,
@@ -208,7 +182,6 @@ function GridCanvas({
         return
       }
 
-      // Handle resize
       if (resizeHandle && resizeStart) {
         const gridPos = pixelToGrid(e.clientX, e.clientY)
         if (!gridPos) return
@@ -219,7 +192,6 @@ function GridCanvas({
         let newColSpan = initialItem.colSpan
         let newRowSpan = initialItem.rowSpan
 
-        // Calculate new bounds based on resize handle
         switch (resizeHandle) {
           case 'nw':
             newColStart = Math.max(1, Math.min(gridPos.col, initialItem.colStart + initialItem.colSpan - 1))
@@ -257,13 +229,10 @@ function GridCanvas({
             break
         }
 
-        // Ensure minimum size of 1x1
         if (newColSpan < 1 || newRowSpan < 1) return
 
-        // Ensure the item stays within grid bounds
         if (newColStart + newColSpan - 1 > config.columns || newRowStart + newRowSpan - 1 > config.rows) return
 
-        // Check if the new size/position would collide with other items
         const proposedItem: GridItem = {
           ...initialItem,
           colStart: newColStart,
@@ -289,7 +258,6 @@ function GridCanvas({
     [draggedItemId, dragStart, resizeHandle, resizeStart, items, pixelToGrid, config, wouldCollide, onItemChange]
   )
 
-  // Handle mouse up
   const handleMouseUp = useCallback(() => {
     setDraggedItemId(null)
     setResizeHandle(null)
@@ -297,7 +265,6 @@ function GridCanvas({
     setResizeStart(null)
   }, [])
 
-  // Add global mouse event listeners
   useEffect(() => {
     if (draggedItemId || resizeHandle) {
       document.addEventListener('mousemove', handleMouseMove)
@@ -309,7 +276,6 @@ function GridCanvas({
     }
   }, [draggedItemId, resizeHandle, handleMouseMove, handleMouseUp])
 
-  // Handle resize handle mouse down
   const handleResizeMouseDown = useCallback(
     (e: React.MouseEvent, handle: ResizeHandle, item: GridItem) => {
       if (e.button !== 0 || !handle) return
@@ -325,13 +291,12 @@ function GridCanvas({
   return (
     <div
       ref={containerRef}
-      className={cn('relative bg-card border border-border rounded-lg overflow-hidden', className)}
+      className={cn('relative overflow-hidden', className)}
       style={{
         width: containerWidth,
         height: containerHeight,
       }}
     >
-      {/* Grid background - uses CSS Grid for cell layout */}
       <div
         ref={gridRef}
         className="absolute inset-0"
@@ -343,7 +308,6 @@ function GridCanvas({
           padding: '8px',
         }}
       >
-        {/* Render grid cells for visual grid lines */}
         {Array.from({ length: config.columns * config.rows }).map((_, index) => {
           const col = (index % config.columns) + 1
           const row = Math.floor(index / config.columns) + 1
@@ -422,6 +386,7 @@ function GridCanvas({
                   {item.colSpan}×{item.rowSpan}
                 </div>
               </div>
+              
             </div>
           )
         })}
@@ -431,8 +396,8 @@ function GridCanvas({
       {items.length === 0 && (
         <div className="absolute inset-0 flex items-center justify-center text-muted-foreground pointer-events-none">
           <div className="text-center">
-            <div className="text-sm font-medium mb-1">Empty Grid</div>
-            <div className="text-xs">Click on cells to add items</div>
+            <div className="text-sm font-medium mb-1">{t('gridCanvas.emptyTitle')}</div>
+            <div className="text-xs">{t('gridCanvas.emptyMessage')}</div>
           </div>
         </div>
       )}

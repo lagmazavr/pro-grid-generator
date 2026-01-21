@@ -1,13 +1,5 @@
-/**
- * Grid domain model utilities
- * Helper functions for working with grid state
- */
-
 import type { GridConfig, GridItem, GridState } from './types'
 
-/**
- * Creates a new grid item with default values
- */
 export function createGridItem(
   id: string,
   colStart: number = 1,
@@ -24,9 +16,6 @@ export function createGridItem(
   }
 }
 
-/**
- * Creates default grid configuration
- */
 export function createDefaultGridConfig(): GridConfig {
   return {
     columns: 6,
@@ -35,9 +24,6 @@ export function createDefaultGridConfig(): GridConfig {
   }
 }
 
-/**
- * Creates default grid state
- */
 export function createDefaultGridState(): GridState {
   return {
     config: createDefaultGridConfig(),
@@ -45,9 +31,6 @@ export function createDefaultGridState(): GridState {
   }
 }
 
-/**
- * Validates if a grid item fits within the grid configuration
- */
 export function isValidGridItem(item: GridItem, config: GridConfig): boolean {
   const colEnd = item.colStart + item.colSpan - 1
   const rowEnd = item.rowStart + item.rowSpan - 1
@@ -62,9 +45,6 @@ export function isValidGridItem(item: GridItem, config: GridConfig): boolean {
   )
 }
 
-/**
- * Checks if two grid items overlap
- */
 export function itemsOverlap(item1: GridItem, item2: GridItem): boolean {
   const item1ColEnd = item1.colStart + item1.colSpan - 1
   const item1RowEnd = item1.rowStart + item1.rowSpan - 1
@@ -79,16 +59,10 @@ export function itemsOverlap(item1: GridItem, item2: GridItem): boolean {
   )
 }
 
-/**
- * Generates a unique ID for a grid item
- */
 export function generateGridItemId(): string {
   return `grid-item-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
 }
 
-/**
- * Clamps a grid item position to fit within the grid configuration
- */
 export function clampGridItem(item: GridItem, config: GridConfig): GridItem {
   const colStart = Math.max(1, Math.min(item.colStart, config.columns))
   const rowStart = Math.max(1, Math.min(item.rowStart, config.rows))

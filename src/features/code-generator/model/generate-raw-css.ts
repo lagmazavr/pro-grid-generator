@@ -1,9 +1,3 @@
-/**
- * CSS Grid code generator
- * Generates pure CSS Grid code with HTML markup
- * No framework dependencies - just vanilla CSS Grid
- */
-
 import type { GridState } from '@/entities/grid'
 import {
   sortGridItems,
@@ -16,10 +10,6 @@ interface GeneratorOptions {
   withStyledBorders?: boolean
 }
 
-/**
- * Generates CSS Grid code from grid state
- * Uses pure CSS Grid with HTML and CSS
- */
 export function generateRawCSSCode(
   gridState: GridState,
   format: 'jsx' | 'html' = 'html',
@@ -50,7 +40,6 @@ export function generateRawCSSCode(
     })
     .join('\n')
 
-  // Generate CSS classes for grid items (HTML format only)
   const gridItemStyles = sortedItems
     .map((item, index) => {
       const itemNumber = index + 1

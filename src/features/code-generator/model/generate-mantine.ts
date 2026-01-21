@@ -1,9 +1,3 @@
-/**
- * Mantine code generator
- * Generates Mantine code using CSS Grid with Box and Paper components
- * Uses simple CSS Grid with MantineProvider wrapper
- */
-
 import type { GridState } from '@/entities/grid'
 import {
   sortGridItems,
@@ -21,17 +15,14 @@ interface GeneratorOptions {
   withTailwind?: boolean
 }
 
-/**
- * Generates Mantine Grid code from grid state
- * Uses Box component with CSS Grid and Paper for items
- */
 export function generateMantineCode(gridState: GridState, options: GeneratorOptions = {}): string {
   const { withStyledBorders = true, withTailwind = false } = options
   const { config, items } = gridState
 
+  const header = `// Quickstart: https://mantine.dev/getting-started/`
+
   const hasVertical = hasVerticalItems(items)
 
-  // If no vertical items, use Mantine's native grid system
   if (!hasVertical && items.length > 0) {
     const sortedItems = sortGridItems(items)
     const columnRatio = 12 / config.columns
@@ -49,16 +40,14 @@ export function generateMantineCode(gridState: GridState, options: GeneratorOpti
 
     const gap = config.gap % 4 === 0 ? config.gap / 4 : `\`${config.gap}px\``
 
-    return `// npm install @mantine/core
-import { MantineProvider, Grid } from "@mantine/core";
+    return `${header}
+import { Grid } from "@mantine/core";
 
 const MyGrid = () => {
   return (
-    <MantineProvider>
-      <Grid gutter={${gap}}>
+    <Grid gutter={${gap}}>
 ${gridItems}
-      </Grid>
-    </MantineProvider>
+    </Grid>
   );
 }
 
@@ -72,27 +61,25 @@ export default MyGrid;`
     const containerStyle = withTailwind
       ? `className="grid ${gridColsClass} ${gridRowsClass} ${gapClass}"`
       : `style={{
-          display: "grid",
-          gridTemplateColumns: "repeat(${config.columns}, 1fr)",
-          gridTemplateRows: "repeat(${config.rows}, 1fr)",
+          display: 'grid',
+          gridTemplateColumns: \`repeat(${config.columns}, 1fr)\`,
+          gridTemplateRows: \`repeat(${config.rows}, 1fr)\`,
           gap: \`${config.gap}px\`,
         }}`
     
     const gridTag = withTailwind
       ? `<Grid ${containerStyle}>`
       : `<Grid
-        ${containerStyle}
-      >`
-    return `// npm install @mantine/core
-import { MantineProvider, Grid } from "@mantine/core";
+      ${containerStyle}
+    >`
+    return `${header}
+import { Grid } from "@mantine/core";
 
 const MyGrid = () => {
   return (
-    <MantineProvider>
-      ${gridTag}
-        {/* Grid items code will appear here */}
-      </Grid>
-    </MantineProvider>
+    ${gridTag}
+      {/* Grid items code will appear here */}
+    </Grid>
   );
 }
 
@@ -112,16 +99,29 @@ export default MyGrid;`
       
       if (withTailwind) {
         const classes = generateTailwindGridClasses(item, withStyledBorders)
-        return `        <Grid.Col className="${classes}">
-          Item ${itemNumber}
-        </Grid.Col>`
+        return `      <Card className="${classes}">
+        Item ${itemNumber}
+      </Card>`
       } else {
         const styleContent = borderStyle
-          ? `{ gridColumnStart: ${item.colStart}, gridColumnEnd: ${colEnd}, gridRowStart: ${item.rowStart}, gridRowEnd: ${rowEnd}, ${borderStyle} }`
-          : `{ gridColumnStart: ${item.colStart}, gridColumnEnd: ${colEnd}, gridRowStart: ${item.rowStart}, gridRowEnd: ${rowEnd} }`
-        return `        <Grid.Col style={${styleContent}}>
-          Item ${itemNumber}
-        </Grid.Col>`
+          ? `{
+          gridColumnStart: ${item.colStart},
+          gridColumnEnd: ${colEnd},
+          gridRowStart: ${item.rowStart},
+          gridRowEnd: ${rowEnd},
+          ${borderStyle}
+        }`
+          : `{
+          gridColumnStart: ${item.colStart},
+          gridColumnEnd: ${colEnd},
+          gridRowStart: ${item.rowStart},
+          gridRowEnd: ${rowEnd},
+        }`
+        return `      <Card
+        style={${styleContent}}
+      >
+        Item ${itemNumber}
+      </Card>`
       }
     })
     .join('\n')
@@ -129,27 +129,25 @@ export default MyGrid;`
   const containerStyle = withTailwind
     ? `className="grid ${gridColsClass} ${gridRowsClass} ${gapClass}"`
     : `style={{
-        display: "grid",
-        gridTemplateColumns: "repeat(${config.columns}, 1fr)",
-        gridTemplateRows: "repeat(${config.rows}, 1fr)",
+        display: 'grid',
+        gridTemplateColumns: \`repeat(${config.columns}, 1fr)\`,
+        gridTemplateRows: \`repeat(${config.rows}, 1fr)\`,
         gap: \`${config.gap}px\`,
       }}`
 
-  const gridTag = withTailwind
-    ? `<Grid ${containerStyle}>`
-    : `<Grid
-        ${containerStyle}
-      >`
-  return `// npm install @mantine/core
-import { MantineProvider, Grid } from "@mantine/core";
+  const containerTag = withTailwind
+    ? `<div ${containerStyle}>`
+    : `<div
+      ${containerStyle}
+    >`
+  return `${header}
+import { Card } from "@mantine/core";
 
 const MyGrid = () => {
   return (
-    <MantineProvider>
-      ${gridTag}
+    ${containerTag}
 ${gridItems}
-      </Grid>
-    </MantineProvider>
+    </div>
   );
 }
 
