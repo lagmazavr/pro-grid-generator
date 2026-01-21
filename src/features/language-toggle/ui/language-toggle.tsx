@@ -70,11 +70,11 @@ function LanguageToggle() {
           variant={currentLocale === locale ? 'default' : 'outline'}
           size="sm"
           onClick={() => handleLanguageChange(locale)}
-          className="cursor-pointer min-w-[40px] flex items-center justify-center gap-1.5"
+          className="cursor-pointer min-w-[36px] sm:min-w-[40px] flex items-center justify-center gap-1 sm:gap-1.5 px-1.5 sm:px-2"
           title={LOCALE_LABELS[locale]}
         >
           <FlagIcon locale={locale} />
-          <span className="text-xs font-medium">{LOCALE_LABELS[locale]}</span>
+          <span className="text-[10px] sm:text-xs font-medium">{LOCALE_LABELS[locale]}</span>
         </Button>
       ))}
     </div>

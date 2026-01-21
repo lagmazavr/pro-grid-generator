@@ -17,12 +17,15 @@ interface GridCanvasProps {
   className?: string
 }
 
+const DEFAULT_CONTAINER_WIDTH = 800
+const DEFAULT_CONTAINER_HEIGHT = 600
+
 type ResizeHandle = 'nw' | 'ne' | 'sw' | 'se' | 'n' | 's' | 'e' | 'w' | null
 
 function GridCanvas({
   gridState,
-  containerWidth = 800,
-  containerHeight = 600,
+  containerWidth,
+  containerHeight,
   onItemClick,
   onEmptyCellClick,
   onItemChange,
@@ -37,11 +40,48 @@ function GridCanvas({
   const [resizeHandle, setResizeHandle] = useState<ResizeHandle>(null)
   const [dragStart, setDragStart] = useState<{ colStart: number; rowStart: number } | null>(null)
   const [resizeStart, setResizeStart] = useState<{ item: GridItem } | null>(null)
+  const [dimensions, setDimensions] = useState({ width: DEFAULT_CONTAINER_WIDTH, height: DEFAULT_CONTAINER_HEIGHT })
+
+  // Calculate responsive dimensions
+  useEffect(() => {
+    if (containerWidth && containerHeight) {
+      setDimensions({ width: containerWidth, height: containerHeight })
+      return
+    }
+
+    const updateDimensions = () => {
+      if (containerRef.current) {
+        const rect = containerRef.current.getBoundingClientRect()
+        const parentWidth = rect.width || DEFAULT_CONTAINER_WIDTH
+        const maxWidth = Math.min(parentWidth, DEFAULT_CONTAINER_WIDTH)
+        const aspectRatio = DEFAULT_CONTAINER_HEIGHT / DEFAULT_CONTAINER_WIDTH
+        const height = maxWidth * aspectRatio
+        setDimensions({ width: maxWidth, height })
+      }
+    }
+
+    // Use ResizeObserver for better performance
+    if (containerRef.current && !containerWidth && !containerHeight) {
+      const resizeObserver = new ResizeObserver(() => {
+        updateDimensions()
+      })
+      resizeObserver.observe(containerRef.current)
+      
+      // Initial calculation
+      updateDimensions()
+      
+      return () => {
+        resizeObserver.disconnect()
+      }
+    } else {
+      updateDimensions()
+    }
+  }, [containerWidth, containerHeight])
 
   const cellDimensions = useMemo(() => {
     if (!gridRef.current) {
-      const cellWidth = (containerWidth - 16 - config.gap * (config.columns - 1)) / config.columns
-      const cellHeight = (containerHeight - 16 - config.gap * (config.rows - 1)) / config.rows
+      const cellWidth = (dimensions.width - 16 - config.gap * (config.columns - 1)) / config.columns
+      const cellHeight = (dimensions.height - 16 - config.gap * (config.rows - 1)) / config.rows
       return { cellWidth, cellHeight, gap: config.gap, padding: 8 }
     }
 
@@ -53,7 +93,7 @@ function GridCanvas({
     const cellHeight = (availableHeight - config.gap * (config.rows - 1)) / config.rows
 
     return { cellWidth, cellHeight, gap: config.gap, padding }
-  }, [containerWidth, containerHeight, config.columns, config.rows, config.gap])
+  }, [dimensions.width, dimensions.height, config.columns, config.rows, config.gap])
 
   const isCellOccupied = useMemo(() => {
     const occupied = new Set<string>()
@@ -291,10 +331,12 @@ function GridCanvas({
   return (
     <div
       ref={containerRef}
-      className={cn('relative overflow-hidden', className)}
+      className={cn('relative overflow-hidden w-full', className)}
       style={{
-        width: containerWidth,
-        height: containerHeight,
+        width: containerWidth || '100%',
+        height: containerHeight || dimensions.height,
+        maxWidth: containerWidth || DEFAULT_CONTAINER_WIDTH,
+        ...(containerWidth && containerHeight ? {} : { aspectRatio: `${DEFAULT_CONTAINER_WIDTH} / ${DEFAULT_CONTAINER_HEIGHT}` }),
       }}
     >
       <div

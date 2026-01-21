@@ -1,4 +1,4 @@
-import { GridEditorPage } from '@/pages/grid-editor'
+import { GridEditorPage } from '@/views/grid-editor'
 import { isValidLocale, isValidTechnology, type Technology } from '@/shared/types/routing'
 import { notFound } from 'next/navigation'
 

@@ -212,11 +212,11 @@ function GridEditorPage({ technology: initialTechnology }: GridEditorPageProps) 
   return (
     <div className="min-h-screen bg-background">
       <header className="border-b border-border bg-card/50 backdrop-blur supports-[backdrop-filter]:bg-card/30">
-        <div className="container mx-auto px-6 py-5">
-          <div className="flex items-start justify-between">
-            <div className="flex items-center gap-3">
-              <Logo size={32} />
-              <h1 className="text-3xl font-bold text-foreground tracking-tight">
+        <div className="container mx-auto px-4 py-3 sm:px-6 sm:py-5">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+            <div className="flex items-center gap-2 sm:gap-3">
+              <Logo size={28} className="shrink-0 sm:w-8 sm:h-8" />
+              <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-foreground tracking-tight">
                 {t('header.title')}
               </h1>
             </div>
@@ -228,11 +228,11 @@ function GridEditorPage({ technology: initialTechnology }: GridEditorPageProps) 
         </div>
       </header>
 
-      <main className="container mx-auto py-8">
+      <main className="container mx-auto px-4 sm:px-6 py-4 sm:py-8">
         <div className="flex flex-col gap-8">
-          <Card className="p-0 bg-transparent border-none">
+          <Card className="!p-0 bg-transparent border-none">
             <CardContent>
-              <div className="flex flex-col gap-6 md:grid md:grid-cols-[1fr_2.5fr]">
+              <div className="flex flex-col gap-6 lg:grid lg:grid-cols-[1fr_2.5fr]">
                 <div>
                   <GridControls 
                     className='flex flex-col gap-4 justify-between h-full'
@@ -244,11 +244,9 @@ function GridEditorPage({ technology: initialTechnology }: GridEditorPageProps) 
                   />
                 </div>
                 
-                <div className="flex justify-center rounded-lg">
+                <div className="flex justify-center rounded-lg w-full overflow-hidden">
                   <GridCanvas
                     gridState={gridState}
-                    containerWidth={800}
-                    containerHeight={600}
                     onItemClick={handleItemClick}
                     onEmptyCellClick={handleEmptyCellClick}
                     onItemChange={handleItemChange}
@@ -258,7 +256,7 @@ function GridEditorPage({ technology: initialTechnology }: GridEditorPageProps) 
               </div>
             </CardContent>
           </Card>
-          <Card className="flex flex-col min-h-0 bg-transparent border-none">
+          <Card className="flex flex-col min-h-0 p-0 bg-transparent border-none">
             <CardContent className="flex-1 flex flex-col min-h-0 gap-4">
               <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                 <TechnologySelector
