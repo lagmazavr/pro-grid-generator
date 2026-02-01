@@ -1,0 +1,67 @@
+{
+  "common": {
+    "delete": "Удалить",
+    "deleteGridItem": "Удалить элемент сетки",
+    "copy": "Копировать",
+    "copied": "Скопировано",
+    "columns": "Столбцы",
+    "rows": "Строки",
+    "gap": "Отступ (px)",
+    "reset": "Сбросить"
+  },
+  "header": {
+    "title": "Генератор Сетки",
+    "subtitle": "Визуальный редактор сетки для множества фреймворков и подходов CSS"
+  },
+  "gridCanvas": {
+    "title": "Холст сетки",
+    "instruction": "Нажмите на ячейки, чтобы добавить элементы",
+    "emptyTitle": "Пустая сетка",
+    "emptyMessage": "Нажмите на ячейки, чтобы добавить элементы"
+  },
+  "codeOutput": {
+    "title": "Сгенерированный код"
+  },
+  "technologies": {
+    "material-ui": "Material UI v7",
+    "ant-design": "Ant Design v6",
+    "mantine": "Mantine v8",
+    "raw-css": "CSS Grid",
+    "tailwind": "Tailwind"
+  },
+  "formats": {
+    "jsx": "JSX",
+    "html": "HTML"
+  },
+  "options": {
+    "withStyledBorders": "Со стилизованными границами",
+    "withTailwind": "С tailwind"
+  },
+  "seo": {
+    "material-ui": {
+      "title": "Генератор Сетки Pro Material UI",
+      "description": "Визуально генерируйте код сетки Material UI v7. Создавайте адаптивные макеты сетки с интерфейсом перетаскивания для компонентов Material UI.",
+      "keywords": "material ui, material-ui, mui, генератор сетки, макет сетки, react сетка, material design, ui компоненты"
+    },
+    "ant-design": {
+      "title": "Генератор Сетки Pro Ant Design",
+      "description": "Визуально генерируйте код сетки Ant Design v6. Создавайте адаптивные макеты сетки с интерфейсом перетаскивания для компонентов Ant Design.",
+      "keywords": "ant design, antd, генератор сетки, макет сетки, react сетка, компоненты ant design, ui фреймворк"
+    },
+    "mantine": {
+      "title": "Генератор Сетки Pro Mantine",
+      "description": "Визуально генерируйте код сетки Mantine v8. Создавайте адаптивные макеты сетки с интерфейсом перетаскивания для компонентов Mantine.",
+      "keywords": "mantine, генератор сетки, макет сетки, react сетка, компоненты mantine, ui библиотека"
+    },
+    "raw-css": {
+      "title": "Генератор Сетки Pro CSS",
+      "description": "Визуально генерируйте код CSS Grid. Создавайте адаптивные макеты сетки с интерфейсом перетаскивания, используя нативный CSS Grid.",
+      "keywords": "css grid, генератор сетки, макет сетки, css, адаптивный дизайн, веб макет"
+    },
+    "tailwind": {
+      "title": "Генератор Сетки Pro Tailwind",
+      "description": "Визуально генерируйте код сетки Tailwind CSS. Создавайте адаптивные макеты сетки с интерфейсом перетаскивания, используя утилитарные классы Tailwind.",
+      "keywords": "tailwind css, tailwind, генератор сетки, макет сетки, utility-first css, адаптивный дизайн"
+    }
+  }
+}

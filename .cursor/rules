@@ -1,0 +1,328 @@
+---
+description: TypeScript, React, and styling conventions for the pro-grid-generator project
+globs:
+  - "**/*.tsx"
+  - "**/*.ts"
+name: pro-grid-generator/code-style
+---
+
+# Code Style Guidelines
+
+## TypeScript
+
+- Use strict TypeScript configuration
+- Prefer interfaces over types for object shapes
+- Use proper type annotations for function parameters and return types
+- Avoid `any` type - use `unknown` or proper typing instead
+- Use const assertions for immutable data
+- Prefer type imports: `import type { ComponentType } from 'react'`
+
+## React Components
+
+- **ALWAYS use function declarations for components** - never use arrow functions or const assignments
+- Use functional components with hooks
+- Prefer composition over inheritance
+- Use proper prop types with TypeScript interfaces
+- Prefer controlled components over uncontrolled
+- Use proper key props for lists
+
+## Styling (Tailwind CSS)
+
+- **Use Tailwind utility classes ONLY** - avoid custom CSS when possible
+- Follow mobile-first responsive design principles
+- Use CSS variables for theming (defined in `src/index.css`)
+- Use Tailwind's design tokens consistently
+- Use the `cn()` utility function for conditional class names
+
+## Component Patterns
+
+### Function Declaration Component (Required)
+
+```tsx
+import { cn } from '@/src/shared/lib'
+
+interface CardProps {
+  title: string
+  description?: string
+}
+
+function Card({ title, description }: CardProps) {
+  return (
+    <div className="bg-card border border-border rounded-lg p-4">
+      <h3 className="text-lg font-semibold text-foreground">{title}</h3>
+      {description && <p className="text-muted-foreground">{description}</p>}
+    </div>
+  )
+}
+
+export { Card }
+```
+
+### Component with Variants (using class-variance-authority)
+
+```tsx
+import { cva, type VariantProps } from 'class-variance-authority'
+import { cn } from '@/src/shared/lib'
+
+const buttonVariants = cva(
+  'inline-flex items-center justify-center rounded-md text-sm font-medium',
+  {
+    variants: {
+      variant: {
+        default: 'bg-primary text-primary-foreground',
+        destructive: 'bg-destructive text-destructive-foreground',
+        outline: 'border border-input bg-background',
+      },
+      size: {
+        default: 'h-10 px-4',
+        sm: 'h-8 px-3',
+        lg: 'h-12 px-6',
+      },
+    },
+    defaultVariants: {
+      variant: 'default',
+      size: 'default',
+    },
+  }
+)
+
+interface ButtonProps
+  extends React.ButtonHTMLAttributes<HTMLButtonElement>,
+    VariantProps<typeof buttonVariants> {}
+
+function Button({ variant, size, className, ...props }: ButtonProps) {
+  return (
+    <button
+      className={cn(buttonVariants({ variant, size }), className)}
+      {...props}
+    />
+  )
+}
+
+export { Button, buttonVariants }
+```
+
+## Forbidden Patterns
+
+### ❌ DO NOT use arrow function components
+
+```tsx
+// ❌ WRONG - Never use arrow functions for components
+export const Card = ({ title }: CardProps) => {
+  return <div>...</div>
+}
+```
+
+### ✅ DO use function declarations
+
+```tsx
+// ✅ CORRECT - Always use function declarations
+function Card({ title }: CardProps) {
+  return <div>...</div>
+}
+
+export { Card }
+```
+
+---
+description: Architecture and organizational principles for the pro-grid-generator project
+globs:
+  - "src/**/*.tsx"
+  - "src/**/*.ts"
+name: pro-grid-generator/methodology
+---
+
+# Feature-Sliced Design Methodology
+
+## Layer Structure
+
+```
+src/
+├── shared/     # Reusable code (UI, lib, api, hooks, stores, config)
+├── entities/   # Business entities
+├── features/   # User scenarios
+├── widgets/    # Composite UI blocks
+└── pages/      # Application pages
+```
+
+## Import Rules
+
+- **Shared layer**: Can import from shared only
+- **Entities layer**: Can import from shared and entities
+- **Features layer**: Can import from shared, entities, and features
+- **Widgets layer**: Can import from shared, entities, features, and widgets
+- **Pages layer**: Can import from all layers
+
+## Entry Point Pattern
+
+### Single Entry Point Rule
+
+Each slice (entity, feature, widget, page) has **exactly ONE** `index.ts` file at its root level:
+
+- ✅ `entities/user/index.ts` - Single entry point
+- ❌ `entities/user/model/index.ts` - NOT allowed
+- ❌ `entities/user/ui/index.ts` - NOT allowed
+
+### Why This Pattern?
+
+1. **Manual Control**: You explicitly decide what gets exported to other layers
+2. **Clear Public API**: The `index.ts` file is the contract between layers
+3. **Prevents Accidental Exports**: Internal implementation details stay hidden
+
+### How to Export
+
+```ts
+// entities/user/index.ts
+export type { User } from './model/types'
+export { UserCard } from './ui/user-card'
+export { useUser } from './api/user-queries'
+```
+
+### Importing from Other Layers
+
+```tsx
+// ✅ CORRECT - Import from slice entry point
+import { User, UserCard, useUser } from '@/src/entities/user'
+
+// ❌ WRONG - Direct import from subfolder
+import { User } from '@/src/entities/user/model/types'
+```
+
+## File Naming Conventions
+
+- Use kebab-case for files: `user-card.tsx`, `use-user.ts`
+- Use PascalCase for React components: `UserCard`, `LoginForm`
+- Use camelCase for utilities and hooks: `useUser`, `formatDate`
+
+## Directory Structure
+
+### Entity Structure
+
+```
+entities/
+└── user/
+    ├── api/
+    │   ├── user-api.ts
+    │   └── user-queries.ts
+    ├── model/
+    │   ├── types.ts
+    │   └── utils.ts
+    ├── ui/
+    │   └── user-card.tsx
+    └── index.ts  ← Single entry point
+```
+
+### Feature Structure
+
+```
+features/
+└── auth/
+    ├── model/
+    │   └── use-auth.ts
+    ├── ui/
+    │   └── login-form.tsx
+    └── index.ts  ← Single entry point
+```
+
+### Shared Structure
+
+The `shared` layer is different - each subfolder can have its own `index.ts`:
+
+```
+shared/
+├── ui/
+│   ├── button.tsx
+│   ├── card.tsx
+│   └── index.ts  ← Exports all UI components
+├── lib/
+│   ├── cn.ts
+│   └── index.ts  ← Exports all utilities
+└── hooks/
+    └── index.ts  ← Exports all hooks
+```
+
+## Import Organization
+
+```tsx
+// 1. React imports
+import { useState } from 'react'
+
+// 2. Third-party libraries
+import { cva } from 'class-variance-authority'
+
+// 3. Internal imports (shared first, then specific layers)
+import { cn } from '@/src/shared/lib'
+import { Button } from '@/src/shared/ui'
+import { User } from '@/src/entities/user'
+import { LoginForm } from '@/src/features/auth'
+
+// 4. Relative imports
+import { useLocalState } from './use-local-state'
+```
+
+---
+description: Framework, libraries, and tooling configuration for the pro-grid-generator project
+globs:
+  - "**/*.tsx"
+  - "**/*.ts"
+name: pro-grid-generator/tech-stack
+---
+
+# Tech Stack & Tools
+
+## Core Stack
+
+- **Framework**: React 19
+- **Language**: TypeScript 5
+- **Build Tool**: Vite 7
+- **Styling**: Tailwind CSS 4
+- **UI Components**: shadcn/ui
+- **Package Manager**: npm
+- **Architecture**: Feature-Sliced Design (FSD)
+
+## Utilities
+
+- **class-variance-authority**: For component variants
+- **clsx**: For conditional class names
+- **tailwind-merge**: For merging Tailwind classes
+- **lucide-react**: For icons
+
+## Tailwind CSS
+
+- Use utility classes for styling
+- Import `src/index.css` in main entry point for Tailwind styles
+- Use CSS variables for theming (defined in `src/index.css`)
+- Use `cn()` utility for conditional class names
+- Follow responsive design with mobile-first approach
+
+## shadcn/ui Components
+
+- Located in `src/shared/ui/`
+- Fully customizable with Tailwind CSS
+- Built with accessibility in mind
+- Copy and paste components as needed
+- Add new components from [ui.shadcn.com](https://ui.shadcn.com/)
+
+## Path Aliases
+
+Use `@/*` path alias pointing to project root:
+
+```tsx
+import { Button } from '@/src/shared/ui'
+import { cn } from '@/src/shared/lib'
+```
+
+## Type Definitions
+
+- Define types in `model/types.ts` within each slice
+- Use interfaces for object shapes
+- Export types for reuse across the application
+
+## Best Practices
+
+- Keep components small and focused
+- Separate UI from business logic
+- Use proper TypeScript types throughout
+- Follow FSD import rules strictly
+- Export only what's needed from each layer
+

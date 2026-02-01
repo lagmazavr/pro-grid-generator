@@ -1,0 +1,67 @@
+{
+  "common": {
+    "delete": "Delete",
+    "deleteGridItem": "Delete grid item",
+    "copy": "Copy",
+    "copied": "Copied",
+    "columns": "Columns",
+    "rows": "Rows",
+    "gap": "Gap (px)",
+    "reset": "Reset"
+  },
+  "header": {
+    "title": "Pro Grid Generator",
+    "subtitle": "Visual grid editor for multiple frameworks and CSS approaches"
+  },
+  "gridCanvas": {
+    "title": "Grid canvas",
+    "instruction": "Click on cells to add items",
+    "emptyTitle": "Empty grid",
+    "emptyMessage": "Click on cells to add items"
+  },
+  "codeOutput": {
+    "title": "Generated code"
+  },
+  "technologies": {
+    "material-ui": "Material UI v7",
+    "ant-design": "Ant Design v6",
+    "mantine": "Mantine v8",
+    "raw-css": "CSS Grid",
+    "tailwind": "Tailwind"
+  },
+  "formats": {
+    "jsx": "JSX",
+    "html": "HTML"
+  },
+  "options": {
+    "withStyledBorders": "With styled borders",
+    "withTailwind": "With Tailwind"
+  },
+  "seo": {
+    "material-ui": {
+      "title": "Pro Material UI Grid Generator",
+      "description": "Generate Material UI v7 Grid code visually. Create responsive grid layouts with drag-and-drop interface for Material UI components.",
+      "keywords": "material ui, material-ui, mui, grid generator, grid layout, react grid, material design, ui components"
+    },
+    "ant-design": {
+      "title": "Pro Ant Design Grid Generator",
+      "description": "Generate Ant Design v6 Grid code visually. Create responsive grid layouts with drag-and-drop interface for Ant Design components.",
+      "keywords": "ant design, antd, grid generator, grid layout, react grid, ant design components, ui framework"
+    },
+    "mantine": {
+      "title": "Pro Mantine Grid Generator",
+      "description": "Generate Mantine v8 Grid code visually. Create responsive grid layouts with drag-and-drop interface for Mantine components.",
+      "keywords": "mantine, grid generator, grid layout, react grid, mantine components, ui library"
+    },
+    "raw-css": {
+      "title": "Pro CSS Grid Generator",
+      "description": "Generate CSS Grid code visually. Create responsive grid layouts with drag-and-drop interface using native CSS Grid.",
+      "keywords": "css grid, grid generator, grid layout, css, responsive design, web layout"
+    },
+    "tailwind": {
+      "title": "Pro Tailwind Grid Generator",
+      "description": "Generate Tailwind CSS Grid code visually. Create responsive grid layouts with drag-and-drop interface using Tailwind utility classes.",
+      "keywords": "tailwind css, tailwind, grid generator, grid layout, utility-first css, responsive design"
+    }
+  }
+}

@@ -1,0 +1,67 @@
+{
+  "common": {
+    "delete": "Eliminar",
+    "deleteGridItem": "Eliminar elemento de cuadrícula",
+    "copy": "Copiar",
+    "copied": "Copiado",
+    "columns": "Columnas",
+    "rows": "Filas",
+    "gap": "Espaciado (px)",
+    "reset": "Restablecer"
+  },
+  "header": {
+    "title": "Generador de Cuadrícula",
+    "subtitle": "Editor visual de cuadrícula para múltiples frameworks y enfoques CSS"
+  },
+  "gridCanvas": {
+    "title": "Lienzo de cuadrícula",
+    "instruction": "Haz clic en las celdas para agregar elementos",
+    "emptyTitle": "Cuadrícula vacía",
+    "emptyMessage": "Haz clic en las celdas para agregar elementos"
+  },
+  "codeOutput": {
+    "title": "Código generado"
+  },
+  "technologies": {
+    "material-ui": "Material UI v7",
+    "ant-design": "Ant Design v6",
+    "mantine": "Mantine v8",
+    "raw-css": "CSS Grid",
+    "tailwind": "Tailwind"
+  },
+  "formats": {
+    "jsx": "JSX",
+    "html": "HTML"
+  },
+  "options": {
+    "withStyledBorders": "Con bordes estilizados",
+    "withTailwind": "Con tailwind"
+  },
+  "seo": {
+    "material-ui": {
+      "title": "Generador de Cuadrícula Pro Material UI",
+      "description": "Genera código de cuadrícula Material UI v7 visualmente. Crea diseños de cuadrícula responsivos con interfaz de arrastrar y soltar para componentes Material UI.",
+      "keywords": "material ui, material-ui, mui, generador de cuadrícula, diseño de cuadrícula, cuadrícula react, material design, componentes ui"
+    },
+    "ant-design": {
+      "title": "Generador de Cuadrícula Pro Ant Design",
+      "description": "Genera código de cuadrícula Ant Design v6 visualmente. Crea diseños de cuadrícula responsivos con interfaz de arrastrar y soltar para componentes Ant Design.",
+      "keywords": "ant design, antd, generador de cuadrícula, diseño de cuadrícula, cuadrícula react, componentes ant design, framework ui"
+    },
+    "mantine": {
+      "title": "Generador de Cuadrícula Pro Mantine",
+      "description": "Genera código de cuadrícula Mantine v8 visualmente. Crea diseños de cuadrícula responsivos con interfaz de arrastrar y soltar para componentes Mantine.",
+      "keywords": "mantine, generador de cuadrícula, diseño de cuadrícula, cuadrícula react, componentes mantine, biblioteca ui"
+    },
+    "raw-css": {
+      "title": "Generador de Cuadrícula Pro CSS",
+      "description": "Genera código CSS Grid visualmente. Crea diseños de cuadrícula responsivos con interfaz de arrastrar y soltar usando CSS Grid nativo.",
+      "keywords": "css grid, generador de cuadrícula, diseño de cuadrícula, css, diseño responsivo, diseño web"
+    },
+    "tailwind": {
+      "title": "Generador de Cuadrícula Pro Tailwind",
+      "description": "Genera código de cuadrícula Tailwind CSS visualmente. Crea diseños de cuadrícula responsivos con interfaz de arrastrar y soltar usando clases de utilidad Tailwind.",
+      "keywords": "tailwind css, tailwind, generador de cuadrícula, diseño de cuadrícula, css utility-first, diseño responsivo"
+    }
+  }
+}
