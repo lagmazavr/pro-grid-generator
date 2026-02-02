@@ -4,6 +4,7 @@ import {
   clampGridItem,
   createDefaultGridState,
   generateGridItemId,
+  GridActions,
   isValidGridItem,
   type GridItem,
   type GridState,
@@ -20,13 +21,14 @@ import { GridControls } from '@/features/grid-controls'
 import { LanguageToggle } from '@/features/language-toggle'
 import { ThemeToggle } from '@/features/theme-toggle'
 import { DEFAULT_TECHNOLOGY, type Technology } from '@/shared/types/routing'
+import { useMediaQuery } from '@/shared/lib'
 import { Card, CardContent, Logo } from '@/shared/ui'
 import { AppFooter } from '@/widgets/app-footer'
 import { GridCanvas } from '@/widgets/grid-canvas'
 import { TechnologySelector } from '@/widgets/technology-selector'
 import { useTranslations } from 'next-intl'
 import { useParams, useRouter } from 'next/navigation'
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 
 type CodeGeneratorType = Technology
 
@@ -84,6 +86,10 @@ function GridEditorPage({ technology: initialTechnology }: GridEditorPageProps) 
   const [withStyledBorders, setWithStyledBorders] = useState(true)
   const [withTailwind, setWithTailwind] = useState(false)
   const [isHydrated, setIsHydrated] = useState(false)
+  const [isCodeLoading, setIsCodeLoading] = useState(false)
+  const isFirstCodeRender = useRef(true)
+  const codeLoadingTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const isTabletOrDesktop = useMediaQuery('(min-width: 768px)')
   
   // Load persisted state only on client after mount (prevents hydration mismatch)
   useEffect(() => {
@@ -129,7 +135,7 @@ function GridEditorPage({ technology: initialTechnology }: GridEditorPageProps) 
 
   const handleTechnologyChange = (tech: Technology) => {
     setCodeGeneratorType(tech)
-    router.push(`/${locale}/${tech}`)
+    router.push(`/${locale}/${tech}`, { scroll: false })
   }
 
   const generatedCode = useMemo(() => {
@@ -151,6 +157,27 @@ function GridEditorPage({ technology: initialTechnology }: GridEditorPageProps) 
     }
   }, [gridState, codeGeneratorType, codeFormat, withStyledBorders, withTailwind])
 
+  // Brief loading state when generated code inputs change (skip first render)
+  useEffect(() => {
+    if (isFirstCodeRender.current) {
+      isFirstCodeRender.current = false
+      return
+    }
+    if (codeLoadingTimeoutRef.current) {
+      clearTimeout(codeLoadingTimeoutRef.current)
+    }
+    setIsCodeLoading(true)
+    codeLoadingTimeoutRef.current = setTimeout(() => {
+      setIsCodeLoading(false)
+      codeLoadingTimeoutRef.current = null
+    }, 220)
+    return () => {
+      if (codeLoadingTimeoutRef.current) {
+        clearTimeout(codeLoadingTimeoutRef.current)
+      }
+    }
+  }, [generatedCode])
+
   const handleConfigChange = (config: GridState['config']) => {
     const validItems = gridState.items
       .map((item) => {
@@ -170,12 +197,17 @@ function GridEditorPage({ technology: initialTechnology }: GridEditorPageProps) 
   }
 
   const handleEmptyCellClick = (col: number, row: number) => {
+    const colSpan = isTabletOrDesktop ? 1 : 2
+    const rowSpan = isTabletOrDesktop ? 1 : 2
+    const colStart = Math.max(1, Math.min(col, gridState.config.columns - colSpan + 1))
+    const rowStart = Math.max(1, Math.min(row, gridState.config.rows - rowSpan + 1))
+
     const newItem = {
       id: generateGridItemId(),
-      colStart: col,
-      colSpan: 1,
-      rowStart: row,
-      rowSpan: 1,
+      colStart,
+      colSpan,
+      rowStart,
+      rowSpan,
     }
     setGridState({
       ...gridState,
@@ -234,24 +266,33 @@ function GridEditorPage({ technology: initialTechnology }: GridEditorPageProps) 
             <CardContent>
               <div className="flex flex-col gap-6 lg:grid lg:grid-cols-[1fr_2.5fr]">
                 <div>
-                  <GridControls 
-                    className='flex flex-col gap-4 justify-between h-full'
-                    config={gridState.config} 
+                  <GridControls
+                    className="flex flex-col gap-4 justify-between h-full"
+                    config={gridState.config}
                     onConfigChange={handleConfigChange}
                     onReset={handleResetGrid}
                     selectedItemId={selectedItemId}
                     onItemDelete={handleDeleteItem}
                   />
                 </div>
-                
-                <div className="flex justify-center rounded-lg w-full overflow-hidden">
-                  <GridCanvas
-                    gridState={gridState}
-                    onItemClick={handleItemClick}
-                    onEmptyCellClick={handleEmptyCellClick}
-                    onItemChange={handleItemChange}
-                    selectedItemId={selectedItemId}
-                  />
+
+                <div className="flex flex-col gap-4">
+                  <div className="flex justify-center rounded-lg w-full overflow-hidden">
+                    <GridCanvas
+                      gridState={gridState}
+                      onItemClick={handleItemClick}
+                      onEmptyCellClick={handleEmptyCellClick}
+                      onItemChange={handleItemChange}
+                      selectedItemId={selectedItemId}
+                    />
+                  </div>
+                  <div className="lg:hidden">
+                    <GridActions
+                      onReset={handleResetGrid}
+                      selectedItemId={selectedItemId}
+                      onItemDelete={handleDeleteItem}
+                    />
+                  </div>
                 </div>
               </div>
             </CardContent>
@@ -278,6 +319,7 @@ function GridEditorPage({ technology: initialTechnology }: GridEditorPageProps) 
               <CodeOutput
                 code={generatedCode}
                 language={codeFormat === 'html' || codeGeneratorType === 'raw-css' ? 'html' : 'tsx'}
+                isLoading={isCodeLoading}
                 className="flex-1"
               />
             </CardContent>

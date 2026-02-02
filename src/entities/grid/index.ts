@@ -15,3 +15,5 @@ export {
   clampGridItem,
 } from './model/utils'
 
+export { GridActions } from './ui/grid-actions'
+

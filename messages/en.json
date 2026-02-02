@@ -20,7 +20,8 @@
     "emptyMessage": "Click on cells to add items"
   },
   "codeOutput": {
-    "title": "Generated code"
+    "title": "Generated code",
+    "generating": "Generating…"
   },
   "technologies": {
     "material-ui": "Material UI v7",

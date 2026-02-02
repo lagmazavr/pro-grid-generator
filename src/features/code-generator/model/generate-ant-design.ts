@@ -6,7 +6,6 @@ import {
   generateTailwindGapClass,
   generateTailwindGridColsClass,
   generateTailwindGridRowsClass,
-  generateBorderStyle,
   calculateGridItemEnds,
 } from './utils'
 
@@ -26,22 +25,19 @@ export function generateAntDesignCode(gridState: GridState, options: GeneratorOp
   if (!hasVertical && items.length > 0) {
     const sortedItems = sortGridItems(items)
     const columnRatio = 24 / config.columns
-    const borderStyle = generateBorderStyle(withStyledBorders)
     const gridItems = sortedItems
       .map((item, index) => {
         const itemNumber = index + 1
         const span = Math.round(item.colSpan * columnRatio)
-        
+
         if (!withTailwind) {
-          const divStyle = borderStyle ? ` style={{ ${borderStyle} }}` : ''
           return `      <Col span={${span}}>
-        <div${divStyle}>
+        <div>
           Item ${itemNumber}
         </div>
       </Col>`
         } else {
-          const styleProps = borderStyle ? ` style={{ ${borderStyle} }}` : ''
-          return `      <Col span={${span}}${styleProps}>
+          return `      <Col span={${span}}>
         Item ${itemNumber}
       </Col>`
         }
@@ -94,38 +90,30 @@ const MyGrid = () => {
 export default MyGrid;`
   }
 
-  const borderStyle = generateBorderStyle(withStyledBorders)
   const gapClass = generateTailwindGapClass(config.gap)
   const gridColsClass = generateTailwindGridColsClass(config.columns)
   const gridRowsClass = generateTailwindGridRowsClass(config.rows)
-  
+  const variantProp = !withStyledBorders ? ' variant="borderless"' : ''
+
   const sortedItems = sortGridItems(items)
   const gridItems = sortedItems
     .map((item, index) => {
       const itemNumber = index + 1
       const { colEnd, rowEnd } = calculateGridItemEnds(item)
-      
+
       if (withTailwind) {
-        const classes = generateTailwindGridClasses(item, withStyledBorders)
-        return `      <Card className="${classes}">
+        const classes = generateTailwindGridClasses(item, false)
+        return `      <Card${variantProp} className="${classes}">
         Item ${itemNumber}
       </Card>`
       } else {
-        const styleContent = borderStyle
-          ? `{
-          gridColumnStart: ${item.colStart},
-          gridColumnEnd: ${colEnd},
-          gridRowStart: ${item.rowStart},
-          gridRowEnd: ${rowEnd},
-          ${borderStyle}
-        }`
-          : `{
+        const styleContent = `{
           gridColumnStart: ${item.colStart},
           gridColumnEnd: ${colEnd},
           gridRowStart: ${item.rowStart},
           gridRowEnd: ${rowEnd},
         }`
-        return `      <Card
+        return `      <Card${variantProp}
         style={${styleContent}}
       >
         Item ${itemNumber}

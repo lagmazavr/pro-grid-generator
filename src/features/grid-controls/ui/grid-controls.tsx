@@ -1,7 +1,8 @@
 'use client'
 
 import { useTranslations } from 'next-intl'
-import { Input, Button } from '@/shared/ui'
+import { Input } from '@/shared/ui'
+import { GridActions } from '@/entities/grid'
 import type { GridConfig } from '@/entities/grid'
 
 interface GridControlsProps {
@@ -97,21 +98,16 @@ function GridControls({ config, onConfigChange, onReset, selectedItemId, onItemD
               className="w-full"
             />
           </div>
+
         </div>
-        {selectedItemId && onItemDelete && (
-          <Button 
-            size="sm" 
-            variant="destructive" 
-            onClick={onItemDelete} 
-            className="w-full cursor-pointer"
-          >
-            {t('common.deleteGridItem')}
-          </Button>
-        )}
+        <div className="hidden lg:block">
+          <GridActions
+            onReset={onReset}
+            selectedItemId={selectedItemId}
+            onItemDelete={onItemDelete}
+          />
+        </div>
       </div>
-      <Button size="sm" variant="default" onClick={onReset} className="w-full cursor-pointer mb-2">
-        {t('common.reset')}
-      </Button>
     </div>
   )
 }

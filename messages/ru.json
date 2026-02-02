@@ -20,7 +20,8 @@
     "emptyMessage": "Нажмите на ячейки, чтобы добавить элементы"
   },
   "codeOutput": {
-    "title": "Сгенерированный код"
+    "title": "Сгенерированный код",
+    "generating": "Генерация…"
   },
   "technologies": {
     "material-ui": "Material UI v7",

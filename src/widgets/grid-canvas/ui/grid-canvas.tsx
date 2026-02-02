@@ -19,6 +19,9 @@ interface GridCanvasProps {
 
 const DEFAULT_CONTAINER_WIDTH = 800
 const DEFAULT_CONTAINER_HEIGHT = 600
+const MIN_CELL_SIZE = 28
+/** Minimum pointer movement (px) before a click is treated as a drag */
+const DRAG_THRESHOLD_PX = 8
 
 type ResizeHandle = 'nw' | 'ne' | 'sw' | 'se' | 'n' | 's' | 'e' | 'w' | null
 
@@ -36,62 +39,74 @@ function GridCanvas({
   const { config, items } = gridState
   const containerRef = useRef<HTMLDivElement>(null)
   const gridRef = useRef<HTMLDivElement>(null)
+  const dragOccurredRef = useRef(false)
   const [draggedItemId, setDraggedItemId] = useState<string | null>(null)
   const [resizeHandle, setResizeHandle] = useState<ResizeHandle>(null)
-  const [dragStart, setDragStart] = useState<{ colStart: number; rowStart: number } | null>(null)
+  const [dragStart, setDragStart] = useState<{
+    colStart: number
+    rowStart: number
+    clientX: number
+    clientY: number
+  } | null>(null)
   const [resizeStart, setResizeStart] = useState<{ item: GridItem } | null>(null)
   const [dimensions, setDimensions] = useState({ width: DEFAULT_CONTAINER_WIDTH, height: DEFAULT_CONTAINER_HEIGHT })
+  const [isScrollable, setIsScrollable] = useState(false)
 
-  // Calculate responsive dimensions
+  // Calculate responsive dimensions – enforce MIN_CELL_SIZE on mobile for dense grids
   useEffect(() => {
     if (containerWidth && containerHeight) {
       setDimensions({ width: containerWidth, height: containerHeight })
+      setIsScrollable(false)
       return
     }
 
+    const padding = 8
     const updateDimensions = () => {
       if (containerRef.current) {
         const rect = containerRef.current.getBoundingClientRect()
         const parentWidth = rect.width || DEFAULT_CONTAINER_WIDTH
-        const maxWidth = Math.min(parentWidth, DEFAULT_CONTAINER_WIDTH)
-        const aspectRatio = DEFAULT_CONTAINER_HEIGHT / DEFAULT_CONTAINER_WIDTH
-        const height = maxWidth * aspectRatio
-        setDimensions({ width: maxWidth, height })
+        const parentHeight = rect.height || parentWidth * (DEFAULT_CONTAINER_HEIGHT / DEFAULT_CONTAINER_WIDTH)
+
+        const availW = parentWidth - padding * 2
+        const availH = parentHeight - padding * 2
+        const cellW = (availW - config.gap * (config.columns - 1)) / config.columns
+        const cellH = (availH - config.gap * (config.rows - 1)) / config.rows
+
+        const useMinCell = cellW < MIN_CELL_SIZE || cellH < MIN_CELL_SIZE
+        const cellSize = useMinCell ? MIN_CELL_SIZE : Math.min(cellW, cellH)
+
+        const width = padding * 2 + cellSize * config.columns + config.gap * (config.columns - 1)
+        const height = padding * 2 + cellSize * config.rows + config.gap * (config.rows - 1)
+
+        if (useMinCell) {
+          setDimensions({ width, height })
+        } else {
+          const maxWidth = Math.min(parentWidth, DEFAULT_CONTAINER_WIDTH)
+          const aspectRatio = DEFAULT_CONTAINER_HEIGHT / DEFAULT_CONTAINER_WIDTH
+          setDimensions({ width: maxWidth, height: maxWidth * aspectRatio })
+        }
+        setIsScrollable(useMinCell)
       }
     }
 
-    // Use ResizeObserver for better performance
     if (containerRef.current && !containerWidth && !containerHeight) {
-      const resizeObserver = new ResizeObserver(() => {
-        updateDimensions()
-      })
+      const resizeObserver = new ResizeObserver(() => updateDimensions())
       resizeObserver.observe(containerRef.current)
-      
-      // Initial calculation
       updateDimensions()
-      
-      return () => {
-        resizeObserver.disconnect()
-      }
-    } else {
-      updateDimensions()
+      return () => resizeObserver.disconnect()
     }
-  }, [containerWidth, containerHeight])
+    updateDimensions()
+  }, [containerWidth, containerHeight, config.columns, config.rows, config.gap])
 
+  // Compute cell dimensions from dimensions state so item positions stay in sync
+  // with the container on all viewports. Using gridRef.getBoundingClientRect() in
+  // render would read stale layout (previous frame), causing mismatch on resize.
   const cellDimensions = useMemo(() => {
-    if (!gridRef.current) {
-      const cellWidth = (dimensions.width - 16 - config.gap * (config.columns - 1)) / config.columns
-      const cellHeight = (dimensions.height - 16 - config.gap * (config.rows - 1)) / config.rows
-      return { cellWidth, cellHeight, gap: config.gap, padding: 8 }
-    }
-
-    const rect = gridRef.current.getBoundingClientRect()
     const padding = 8
-    const availableWidth = rect.width - padding * 2
-    const availableHeight = rect.height - padding * 2
+    const availableWidth = dimensions.width - padding * 2
+    const availableHeight = dimensions.height - padding * 2
     const cellWidth = (availableWidth - config.gap * (config.columns - 1)) / config.columns
     const cellHeight = (availableHeight - config.gap * (config.rows - 1)) / config.rows
-
     return { cellWidth, cellHeight, gap: config.gap, padding }
   }, [dimensions.width, dimensions.height, config.columns, config.rows, config.gap])
 
@@ -180,26 +195,45 @@ function GridCanvas({
     }
   }
 
+  const handleItemPointerDown = useCallback((item: GridItem, clientX: number, clientY: number) => {
+    dragOccurredRef.current = false
+    setDraggedItemId(item.id)
+    setDragStart({
+      colStart: item.colStart,
+      rowStart: item.rowStart,
+      clientX,
+      clientY,
+    })
+  }, [])
+
   const handleItemMouseDown = useCallback(
     (e: React.MouseEvent, item: GridItem) => {
       if (e.button !== 0) return // Only handle left mouse button
       e.stopPropagation()
-
-      setDraggedItemId(item.id)
-      setDragStart({
-        colStart: item.colStart,
-        rowStart: item.rowStart,
-      })
-
       e.preventDefault()
+      handleItemPointerDown(item, e.clientX, e.clientY)
     },
-    []
+    [handleItemPointerDown]
   )
 
-  const handleMouseMove = useCallback(
-    (e: MouseEvent) => {
+  const handleItemTouchStart = useCallback(
+    (e: React.TouchEvent, item: GridItem) => {
+      e.stopPropagation()
+      const touch = e.touches[0]
+      if (touch) handleItemPointerDown(item, touch.clientX, touch.clientY)
+    },
+    [handleItemPointerDown]
+  )
+
+  const handlePointerMove = useCallback(
+    (clientX: number, clientY: number) => {
       if (draggedItemId && dragStart) {
-        const gridPos = pixelToGrid(e.clientX, e.clientY)
+        const dx = clientX - dragStart.clientX
+        const dy = clientY - dragStart.clientY
+        const distance = Math.sqrt(dx * dx + dy * dy)
+        if (distance < DRAG_THRESHOLD_PX) return
+
+        const gridPos = pixelToGrid(clientX, clientY)
         if (!gridPos) return
 
         const item = items.find((i) => i.id === draggedItemId)
@@ -216,6 +250,7 @@ function GridCanvas({
 
         if (!wouldCollide(proposedItem, draggedItemId)) {
           if (newColStart !== item.colStart || newRowStart !== item.rowStart) {
+            dragOccurredRef.current = true
             onItemChange?.(draggedItemId, proposedItem)
           }
         }
@@ -223,7 +258,7 @@ function GridCanvas({
       }
 
       if (resizeHandle && resizeStart) {
-        const gridPos = pixelToGrid(e.clientX, e.clientY)
+        const gridPos = pixelToGrid(clientX, clientY)
         if (!gridPos) return
 
         const initialItem = resizeStart.item
@@ -298,6 +333,21 @@ function GridCanvas({
     [draggedItemId, dragStart, resizeHandle, resizeStart, items, pixelToGrid, config, wouldCollide, onItemChange]
   )
 
+  const handleMouseMove = useCallback(
+    (e: MouseEvent) => handlePointerMove(e.clientX, e.clientY),
+    [handlePointerMove]
+  )
+
+  const handleTouchMove = useCallback(
+    (e: TouchEvent) => {
+      if (e.touches.length > 0) {
+        e.preventDefault()
+        handlePointerMove(e.touches[0].clientX, e.touches[0].clientY)
+      }
+    },
+    [handlePointerMove]
+  )
+
   const handleMouseUp = useCallback(() => {
     setDraggedItemId(null)
     setResizeHandle(null)
@@ -309,39 +359,73 @@ function GridCanvas({
     if (draggedItemId || resizeHandle) {
       document.addEventListener('mousemove', handleMouseMove)
       document.addEventListener('mouseup', handleMouseUp)
+      document.addEventListener('touchmove', handleTouchMove, { passive: false })
+      document.addEventListener('touchend', handleMouseUp)
+      document.addEventListener('touchcancel', handleMouseUp)
       return () => {
         document.removeEventListener('mousemove', handleMouseMove)
         document.removeEventListener('mouseup', handleMouseUp)
+        document.removeEventListener('touchmove', handleTouchMove)
+        document.removeEventListener('touchend', handleMouseUp)
+        document.removeEventListener('touchcancel', handleMouseUp)
       }
     }
-  }, [draggedItemId, resizeHandle, handleMouseMove, handleMouseUp])
+  }, [draggedItemId, resizeHandle, handleMouseMove, handleTouchMove, handleMouseUp])
+
+  const handleResizePointerDown = useCallback((handle: ResizeHandle, item: GridItem) => {
+    if (!handle) return
+    setResizeHandle(handle)
+    setResizeStart({ item })
+  }, [])
 
   const handleResizeMouseDown = useCallback(
     (e: React.MouseEvent, handle: ResizeHandle, item: GridItem) => {
       if (e.button !== 0 || !handle) return
       e.stopPropagation()
       e.preventDefault()
-
-      setResizeHandle(handle)
-      setResizeStart({ item })
+      handleResizePointerDown(handle, item)
     },
-    []
+    [handleResizePointerDown]
+  )
+
+  const handleResizeTouchStart = useCallback(
+    (e: React.TouchEvent, handle: ResizeHandle, item: GridItem) => {
+      if (!handle) return
+      e.stopPropagation()
+      e.preventDefault()
+      handleResizePointerDown(handle, item)
+    },
+    [handleResizePointerDown]
   )
 
   return (
     <div
       ref={containerRef}
-      className={cn('relative overflow-hidden w-full', className)}
+      className={cn(
+        'relative w-full',
+        isScrollable ? 'overflow-auto max-h-[min(500px,70vh)] min-h-[200px]' : 'overflow-hidden',
+        className
+      )}
       style={{
         width: containerWidth || '100%',
-        height: containerHeight || dimensions.height,
+        height: containerHeight ?? (isScrollable ? undefined : dimensions.height),
         maxWidth: containerWidth || DEFAULT_CONTAINER_WIDTH,
-        ...(containerWidth && containerHeight ? {} : { aspectRatio: `${DEFAULT_CONTAINER_WIDTH} / ${DEFAULT_CONTAINER_HEIGHT}` }),
+        ...(!containerWidth && !containerHeight && !isScrollable
+          ? { aspectRatio: `${DEFAULT_CONTAINER_WIDTH} / ${DEFAULT_CONTAINER_HEIGHT}` }
+          : {}),
       }}
     >
       <div
-        ref={gridRef}
-        className="absolute inset-0"
+        className="relative shrink-0"
+        style={{
+          width: dimensions.width,
+          height: dimensions.height,
+          ...(!isScrollable ? { position: 'absolute', inset: 0 } : {}),
+        }}
+      >
+        <div
+          ref={gridRef}
+          className="absolute inset-0"
         style={{
           display: 'grid',
           gridTemplateColumns: `repeat(${config.columns}, 1fr)`,
@@ -383,7 +467,7 @@ function GridCanvas({
             <div
               key={item.id}
               className={cn(
-                'bg-primary/20 border-2 rounded-md transition-all pointer-events-auto relative',
+                'bg-primary/20 border-2 rounded-md transition-all pointer-events-auto relative touch-none',
                 'hover:bg-primary/30 hover:border-primary/50',
                 isSelected && 'bg-primary/40 border-primary ring-2 ring-primary/20',
                 isDragging && 'opacity-75 cursor-move',
@@ -392,32 +476,38 @@ function GridCanvas({
               )}
               style={style}
               onMouseDown={(e) => handleItemMouseDown(e, item)}
+              onTouchStart={(e) => handleItemTouchStart(e, item)}
               onClick={(e) => {
                 e.stopPropagation()
-                if (!draggedItemId) {
+                if (!dragOccurredRef.current) {
                   onItemClick?.(item.id)
                 }
+                dragOccurredRef.current = false
               }}
             >
-              {/* Resize handles - show only when selected */}
+              {/* Resize handles - show only when selected (w-5 = 20px for better touch targets) */}
               {isSelected && (
                 <>
                   {/* Corner handles */}
                   <div
-                    className="absolute top-0 left-0 w-3 h-3 bg-primary border border-primary-foreground rounded-sm cursor-nw-resize z-10"
+                    className="absolute top-0 left-0 w-3 h-3 bg-primary border border-primary-foreground rounded-sm cursor-nw-resize z-10 touch-none"
                     onMouseDown={(e) => handleResizeMouseDown(e, 'nw', item)}
+                    onTouchStart={(e) => handleResizeTouchStart(e, 'nw', item)}
                   />
                   <div
-                    className="absolute top-0 right-0 w-3 h-3 bg-primary border border-primary-foreground rounded-sm cursor-ne-resize z-10"
+                    className="absolute top-0 right-0 w-3 h-3 bg-primary border border-primary-foreground rounded-sm cursor-ne-resize z-10 touch-none"
                     onMouseDown={(e) => handleResizeMouseDown(e, 'ne', item)}
+                    onTouchStart={(e) => handleResizeTouchStart(e, 'ne', item)}
                   />
                   <div
-                    className="absolute bottom-0 left-0 w-3 h-3 bg-primary border border-primary-foreground rounded-sm cursor-sw-resize z-10"
+                    className="absolute bottom-0 left-0 w-3 h-3 bg-primary border border-primary-foreground rounded-sm cursor-sw-resize z-10 touch-none"
                     onMouseDown={(e) => handleResizeMouseDown(e, 'sw', item)}
+                    onTouchStart={(e) => handleResizeTouchStart(e, 'sw', item)}
                   />
                   <div
-                    className="absolute bottom-0 right-0 w-3 h-3 bg-primary border border-primary-foreground rounded-sm cursor-se-resize z-10"
+                    className="absolute bottom-0 right-0 w-3 h-3 bg-primary border border-primary-foreground rounded-sm cursor-se-resize z-10 touch-none"
                     onMouseDown={(e) => handleResizeMouseDown(e, 'se', item)}
+                    onTouchStart={(e) => handleResizeTouchStart(e, 'se', item)}
                   />
                 </>
               )}
@@ -443,6 +533,7 @@ function GridCanvas({
           </div>
         </div>
       )}
+      </div>
     </div>
   )
 }

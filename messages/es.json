@@ -20,7 +20,8 @@
     "emptyMessage": "Haz clic en las celdas para agregar elementos"
   },
   "codeOutput": {
-    "title": "Código generado"
+    "title": "Código generado",
+    "generating": "Generando…"
   },
   "technologies": {
     "material-ui": "Material UI v7",
