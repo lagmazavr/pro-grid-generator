@@ -15,7 +15,6 @@ A modern grid generator built with Next.js 15, React 19, TypeScript, and followi
 
 - Material UI v7
 - Ant Design v6
-- Mantine v8
 - CSS Grid (raw CSS)
 - Tailwind CSS
 
@@ -46,11 +45,11 @@ src/
 │   ├── lib/                # Utilities
 │   ├── config/             # App configuration (SEO, etc.)
 │   ├── providers/          # React providers (theme, etc.)
-│   └── types/              # TypeScript types
-├── entities/               # Business entities
+│   └── types/              # TypeScript types (routing, code-generator, etc.)
+├── entities/               # Business entities (e.g. grid)
 ├── features/               # User scenarios and features
 ├── widgets/                # Composite UI blocks
-└── pages/                  # Application pages
+└── views/                  # Application pages (e.g. grid-editor)
 
 messages/
 ├── en.json                 # English translations
@@ -72,7 +71,7 @@ npm install
 npm run dev
 ```
 
-The app will be available at `http://localhost:3000` and will redirect to `/en/material-ui` by default.
+The app will be available at `http://localhost:3000` and will redirect to `/en/tailwind` by default.
 
 ### Build
 
@@ -90,15 +89,14 @@ npm start
 
 The application uses technology-based routing with locale support:
 
-- `/` → Redirects to `/en/material-ui`
-- `/[locale]` → Redirects to `/[locale]/material-ui`
+- `/` → Redirects to `/en/tailwind`
+- `/[locale]` → Redirects to `/[locale]/tailwind`
 - `/[locale]/[technology]` → Grid editor for specific technology
 
 ### Supported Routes
 
 - `/en/material-ui`, `/es/material-ui`, `/ru/material-ui`
 - `/en/ant-design`, `/es/ant-design`, `/ru/ant-design`
-- `/en/mantine`, `/es/mantine`, `/ru/mantine`
 - `/en/raw-css`, `/es/raw-css`, `/ru/raw-css`
 - `/en/tailwind`, `/es/tailwind`, `/ru/tailwind`
 
@@ -174,7 +172,7 @@ This project follows the FSD methodology for better code organization and scalab
 - **Entities layer**: Can import from shared and entities
 - **Features layer**: Can import from shared, entities, and features
 - **Widgets layer**: Can import from shared, entities, features, and widgets
-- **Pages layer**: Can import from all layers
+- **Views layer**: Can import from all layers
 
 ### Entry Point Pattern
 
