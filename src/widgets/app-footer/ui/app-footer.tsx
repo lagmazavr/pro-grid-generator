@@ -43,7 +43,7 @@ interface SocialLink {
 
 const SOCIAL_LINKS: SocialLink[] = [
   {
-    href: 'https://github.com/lagmazavr',
+    href: 'https://github.com/zaurberd',
     label: 'GitHub',
     icon: <Github className="h-5 w-5" />,
   },
@@ -64,7 +64,7 @@ const SOCIAL_LINKS: SocialLink[] = [
   },
 ]
 
-const GITHUB_USERNAME = 'lagmazavr'
+const GITHUB_USERNAME = 'zaurberd'
 const GITHUB_URL = `https://github.com/${GITHUB_USERNAME}`
 
 function AppFooter({ className }: AppFooterProps) {
