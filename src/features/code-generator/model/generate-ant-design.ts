@@ -2,20 +2,15 @@ import type { GridState } from '@/entities/grid'
 import {
   sortGridItems,
   hasVerticalItems,
-  generateTailwindGridClasses,
-  generateTailwindGapClass,
-  generateTailwindGridColsClass,
-  generateTailwindGridRowsClass,
   calculateGridItemEnds,
 } from './utils'
 
 interface GeneratorOptions {
   withStyledBorders?: boolean
-  withTailwind?: boolean
 }
 
 export function generateAntDesignCode(gridState: GridState, options: GeneratorOptions = {}): string {
-  const { withStyledBorders = true, withTailwind = false } = options
+  const { withStyledBorders = true } = options
   const { config, items } = gridState
 
   const header = `// Quickstart: https://ant.design/docs/react/introduce`
@@ -29,18 +24,11 @@ export function generateAntDesignCode(gridState: GridState, options: GeneratorOp
       .map((item, index) => {
         const itemNumber = index + 1
         const span = Math.round(item.colSpan * columnRatio)
-
-        if (!withTailwind) {
-          return `      <Col span={${span}}>
+        return `      <Col span={${span}}>
         <div>
           Item ${itemNumber}
         </div>
       </Col>`
-        } else {
-          return `      <Col span={${span}}>
-        Item ${itemNumber}
-      </Col>`
-        }
       })
       .join('\n')
 
@@ -59,29 +47,19 @@ export default MyGrid;`
   }
 
   if (items.length === 0) {
-    const gapClass = generateTailwindGapClass(config.gap)
-    const gridColsClass = generateTailwindGridColsClass(config.columns)
-    const gridRowsClass = generateTailwindGridRowsClass(config.rows)
-    const containerStyle = withTailwind
-      ? `className="grid ${gridColsClass} ${gridRowsClass} ${gapClass}"`
-      : `style={{
-        display: 'grid',
-        gridTemplateColumns: \`repeat(${config.columns}, 1fr)\`,
-        gridTemplateRows: \`repeat(${config.rows}, 1fr)\`,
-        gap: \`${config.gap}px\`,
-      }}`
-    
-    const containerTag = withTailwind
-      ? `<div ${containerStyle}>`
-      : `<div
-      ${containerStyle}
-    >`
     return `${header}
 import { Card } from 'antd'
 
 const MyGrid = () => {
   return (
-    ${containerTag}
+    <div
+      style={{
+        display: 'grid',
+        gridTemplateColumns: \`repeat(${config.columns}, 1fr)\`,
+        gridTemplateRows: \`repeat(${config.rows}, 1fr)\`,
+        gap: \`${config.gap}px\`,
+      }}
+    >
       {/* Grid items code will appear here */}
     </div>
   )
@@ -90,58 +68,39 @@ const MyGrid = () => {
 export default MyGrid;`
   }
 
-  const gapClass = generateTailwindGapClass(config.gap)
-  const gridColsClass = generateTailwindGridColsClass(config.columns)
-  const gridRowsClass = generateTailwindGridRowsClass(config.rows)
   const variantProp = !withStyledBorders ? ' variant="borderless"' : ''
-
   const sortedItems = sortGridItems(items)
   const gridItems = sortedItems
     .map((item, index) => {
       const itemNumber = index + 1
       const { colEnd, rowEnd } = calculateGridItemEnds(item)
-
-      if (withTailwind) {
-        const classes = generateTailwindGridClasses(item, false)
-        return `      <Card${variantProp} className="${classes}">
-        Item ${itemNumber}
-      </Card>`
-      } else {
-        const styleContent = `{
+      const styleContent = `{
           gridColumnStart: ${item.colStart},
           gridColumnEnd: ${colEnd},
           gridRowStart: ${item.rowStart},
           gridRowEnd: ${rowEnd},
         }`
-        return `      <Card${variantProp}
+      return `      <Card${variantProp}
         style={${styleContent}}
       >
         Item ${itemNumber}
       </Card>`
-      }
     })
     .join('\n')
 
-  const containerStyle = withTailwind
-    ? `className="grid ${gridColsClass} ${gridRowsClass} ${gapClass}"`
-    : `style={{
-        display: 'grid',
-        gridTemplateColumns: \`repeat(${config.columns}, 1fr)\`,
-        gridTemplateRows: \`repeat(${config.rows}, 1fr)\`,
-        gap: \`${config.gap}px\`,
-      }}`
-
-  const containerTag = withTailwind
-    ? `<div ${containerStyle}>`
-    : `<div
-      ${containerStyle}
-    >`
   return `${header}
 import { Card } from 'antd'
 
 const MyGrid = () => {
   return (
-    ${containerTag}
+    <div
+      style={{
+        display: 'grid',
+        gridTemplateColumns: \`repeat(${config.columns}, 1fr)\`,
+        gridTemplateRows: \`repeat(${config.rows}, 1fr)\`,
+        gap: \`${config.gap}px\`,
+      }}
+    >
 ${gridItems}
     </div>
   )

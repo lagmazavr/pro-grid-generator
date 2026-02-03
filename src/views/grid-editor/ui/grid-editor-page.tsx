@@ -13,6 +13,7 @@ import {
   CodeOutput,
   generateAntDesignCode,
   generateMaterialUICode,
+  generateMantineCode,
   generateRawCSSCode,
   generateTailwindCode,
 } from '@/features/code-generator'
@@ -139,21 +140,22 @@ function GridEditorPage({ technology: initialTechnology }: GridEditorPageProps) 
   }
 
   const generatedCode = useMemo(() => {
-    const options = {
-      withStyledBorders,
-      withTailwind,
-    }
     switch (codeGeneratorType) {
       case 'material-ui':
-        return generateMaterialUICode(gridState, options)
+        return generateMaterialUICode(gridState, { withStyledBorders })
       case 'ant-design':
-        return generateAntDesignCode(gridState, options)
+        return generateAntDesignCode(gridState, { withStyledBorders })
+      case 'mantine':
+        return generateMantineCode(gridState, {
+          withStyledBorders,
+          withTailwind,
+        })
       case 'raw-css':
         return generateRawCSSCode(gridState, codeFormat, { withStyledBorders })
       case 'tailwind':
         return generateTailwindCode(gridState, codeFormat, { withStyledBorders })
       default:
-        return generateMaterialUICode(gridState, options)
+        return generateMaterialUICode(gridState, { withStyledBorders })
     }
   }, [gridState, codeGeneratorType, codeFormat, withStyledBorders, withTailwind])
 

@@ -33,6 +33,8 @@ function CodeGeneratorOptions({
 
   const isFormatBased = technology === 'raw-css' || technology === 'tailwind'
   const isComponentBased = technology === 'material-ui' || technology === 'ant-design'
+  const isMantine = technology === 'mantine'
+  const showTailwindOption = isMantine && hasVerticalItems
 
   return (
     <div className={className}>
@@ -55,7 +57,7 @@ function CodeGeneratorOptions({
         </div>
       )}
 
-      {isComponentBased && (
+      {(isComponentBased || isMantine) && (
         <div className="flex gap-4">
           <Checkbox
             id="with-styled-borders"
@@ -63,7 +65,7 @@ function CodeGeneratorOptions({
             onChange={(e) => onStyledBordersChange(e.target.checked)}
             label={t('options.withStyledBorders')}
           />
-          {hasVerticalItems && (
+          {showTailwindOption && (
             <Checkbox
               id="with-tailwind"
               checked={withTailwind}
