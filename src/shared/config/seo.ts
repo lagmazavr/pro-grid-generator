@@ -45,20 +45,13 @@ export async function generateMetadata(
       siteName: `Pro ${techDisplayName} Grid Generator`,
       locale,
       type: 'website',
-      images: [
-        {
-          url: `${baseUrl}/og-image-${technology}.png`,
-          width: 1200,
-          height: 630,
-          alt: seoData.title,
-        },
-      ],
+      // Images from opengraph-image.tsx file convention
     },
     twitter: {
       card: 'summary_large_image',
       title: seoData.title,
       description: seoData.description,
-      images: [`${baseUrl}/og-image-${technology}.png`],
+      // Images from opengraph-image.tsx file convention
     },
     alternates: {
       canonical: url,

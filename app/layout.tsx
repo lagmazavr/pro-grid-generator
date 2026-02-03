@@ -8,10 +8,8 @@ function getBaseUrl(): string {
   if (process.env.NEXT_PUBLIC_BASE_URL) {
     return process.env.NEXT_PUBLIC_BASE_URL
   }
-  if (process.env.VERCEL_URL) {
-    return `https://${process.env.VERCEL_URL}`
-  }
-  return 'https://pro-grid-generator.netlify.app'
+  
+  return `https://${process.env.VERCEL_URL}`
 }
 
 export const metadata: Metadata = {
