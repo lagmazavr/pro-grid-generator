@@ -1,27 +1,43 @@
 import type { Metadata } from 'next'
+import { headers } from 'next/headers'
 import { ThemeProvider } from '@/shared/providers/theme-provider'
+import { isValidLocale } from '@/shared/types/routing'
 import './globals.css'
 
+function getBaseUrl(): string {
+  if (process.env.NEXT_PUBLIC_BASE_URL) {
+    return process.env.NEXT_PUBLIC_BASE_URL
+  }
+  if (process.env.VERCEL_URL) {
+    return `https://${process.env.VERCEL_URL}`
+  }
+  return 'https://pro-grid-generator.netlify.app'
+}
+
 export const metadata: Metadata = {
-  title: 'Pro Grid Generator',
+  metadataBase: new URL(getBaseUrl()),
+  title: {
+    default: 'Pro Grid Generator',
+    template: '%s | Pro Grid Generator',
+  },
   description: 'Visual grid editor for multiple frameworks and CSS approaches',
   icons: {
-    icon: [
-      { url: '/favicon.svg', type: 'image/svg+xml' },
-    ],
-    apple: [
-      { url: '/favicon.svg', type: 'image/svg+xml' },
-    ],
+    icon: [{ url: '/favicon.svg', type: 'image/svg+xml' }],
+    apple: [{ url: '/favicon.svg', type: 'image/svg+xml' }],
   },
 }
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: {
   children: React.ReactNode
 }) {
+  const headersList = await headers()
+  const localeHeader = headersList.get('x-next-intl-locale')
+  const lang = isValidLocale(localeHeader) ? localeHeader : 'en'
+
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang={lang} suppressHydrationWarning>
       <body>
         <script
           dangerouslySetInnerHTML={{
