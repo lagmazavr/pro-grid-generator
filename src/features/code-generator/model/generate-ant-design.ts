@@ -68,7 +68,7 @@ const MyGrid = () => {
 export default MyGrid;`
   }
 
-  const variantProp = !withStyledBorders ? ' variant="borderless"' : ''
+  const variantProp = !withStyledBorders
   const sortedItems = sortGridItems(items)
   const gridItems = sortedItems
     .map((item, index) => {
@@ -80,7 +80,8 @@ export default MyGrid;`
           gridRowStart: ${item.rowStart},
           gridRowEnd: ${rowEnd},
         }`
-      return `      <Card${variantProp}
+      const variantAttr = variantProp ? '\n        variant="borderless"' : ''
+      return `      <Card${variantAttr}
         style={${styleContent}}
       >
         Item ${itemNumber}

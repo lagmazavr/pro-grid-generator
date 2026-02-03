@@ -35,7 +35,7 @@
     "html": "HTML"
   },
   "options": {
-    "withStyledBorders": "Con bordes estilizados",
+    "withBorders": "Con bordes",
     "withTailwind": "Con tailwind"
   },
   "seo": {

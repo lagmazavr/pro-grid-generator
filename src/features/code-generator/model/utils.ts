@@ -16,7 +16,7 @@ export function generateTailwindGridClasses(
     `row-span-${item.rowSpan}`,
     item.colStart > 1 ? `col-start-${item.colStart}` : '',
     item.rowStart > 1 ? `row-start-${item.rowStart}` : '',
-    withStyledBorders ? '!border !border-gray-600' : '',
+    withStyledBorders ? 'border border-gray-600' : '',
   ].filter(Boolean)
   
   return classes.join(' ')

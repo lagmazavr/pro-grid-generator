@@ -2,7 +2,6 @@ import type { GridState } from '@/entities/grid'
 import {
   sortGridItems,
   hasVerticalItems,
-  generateBorderStyle,
   calculateGridItemEnds,
 } from './utils'
 
@@ -22,14 +21,12 @@ export function generateMaterialUICode(gridState: GridState, options: GeneratorO
   if (!hasVertical && items.length > 0) {
     const sortedItems = sortGridItems(items)
     const columnRatio = 12 / config.columns
-    const borderStyle = generateBorderStyle(withStyledBorders)
 
     const gridItems = sortedItems
       .map((item, index) => {
         const itemNumber = index + 1
         const size = Math.round(item.colSpan * columnRatio)
-        const sxProps = borderStyle ? ` sx={{ ${borderStyle} }}` : ''
-        return `      <Grid size={${size}}${sxProps}>
+        return `      <Grid size={${size}}>
         Item ${itemNumber}
       </Grid>`
       })
@@ -74,27 +71,20 @@ export default MyGrid;`
   }
 
   const sortedItems = sortGridItems(items)
-  const borderStyle = generateBorderStyle(withStyledBorders)
+  const withElevationZero = !withStyledBorders
 
   const gridItems = sortedItems
     .map((item, index) => {
       const itemNumber = index + 1
       const { colEnd, rowEnd } = calculateGridItemEnds(item)
-      const sxContent = borderStyle
-        ? `{
-          gridColumnStart: ${item.colStart},
-          gridColumnEnd: ${colEnd},
-          gridRowStart: ${item.rowStart},
-          gridRowEnd: ${rowEnd},
-          ${borderStyle}
-        }`
-        : `{
+      const sxContent = `{
           gridColumnStart: ${item.colStart},
           gridColumnEnd: ${colEnd},
           gridRowStart: ${item.rowStart},
           gridRowEnd: ${rowEnd},
         }`
-      return `      <Card
+      const elevationAttr = withElevationZero ? '\n        elevation={0}' : ''
+      return `      <Card${elevationAttr}
         sx={${sxContent}}
       >
         Item ${itemNumber}

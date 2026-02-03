@@ -63,7 +63,7 @@ function CodeGeneratorOptions({
             id="with-styled-borders"
             checked={withStyledBorders}
             onChange={(e) => onStyledBordersChange(e.target.checked)}
-            label={t('options.withStyledBorders')}
+            label={t('options.withBorders')}
           />
           {showTailwindOption && (
             <Checkbox
@@ -82,7 +82,7 @@ function CodeGeneratorOptions({
             id="with-styled-borders-css"
             checked={withStyledBorders}
             onChange={(e) => onStyledBordersChange(e.target.checked)}
-            label={t('options.withStyledBorders')}
+            label={t('options.withBorders')}
           />
         </div>
       )}
