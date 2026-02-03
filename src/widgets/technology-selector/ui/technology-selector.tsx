@@ -2,7 +2,7 @@
 
 import { useTranslations } from 'next-intl'
 import { Button } from '@/shared/ui'
-import type { Technology } from '@/shared/types/routing'
+import { TECHNOLOGIES, type Technology } from '@/shared/types/routing'
 
 interface TechnologySelectorProps {
   selectedTechnology: Technology
@@ -13,12 +13,10 @@ interface TechnologySelectorProps {
 function TechnologySelector({ selectedTechnology, onTechnologyChange, className }: TechnologySelectorProps) {
   const t = useTranslations()
 
-  const technologies: Technology[] = ['raw-css', 'tailwind', 'material-ui', 'ant-design']
-
   return (
     <div className={className}>
       <div className="flex flex-wrap gap-2">
-        {technologies.map((tech) => (
+        {TECHNOLOGIES.map((tech) => (
           <Button
             key={tech}
             size="sm"

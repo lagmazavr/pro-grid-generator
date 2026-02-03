@@ -159,7 +159,7 @@ src/
 
 Each slice (entity, feature, widget, page) has **exactly ONE** `index.ts` file at its root level:
 
-- ✅ `entities/user/index.ts` - Single entry point
+- ✅ `entities/grid/index.ts` - Single entry point
 - ❌ `entities/user/model/index.ts` - NOT allowed
 - ❌ `entities/user/ui/index.ts` - NOT allowed
 
@@ -172,20 +172,19 @@ Each slice (entity, feature, widget, page) has **exactly ONE** `index.ts` file a
 ### How to Export
 
 ```ts
-// entities/user/index.ts
-export type { User } from './model/types'
-export { UserCard } from './ui/user-card'
-export { useUser } from './api/user-queries'
+// entities/grid/index.ts
+export type { GridState, GridItem } from './model/types'
+export { GridActions } from './ui/grid-actions'
 ```
 
 ### Importing from Other Layers
 
 ```tsx
 // ✅ CORRECT - Import from slice entry point
-import { User, UserCard, useUser } from '@/src/entities/user'
+import { GridState, GridItem, GridActions } from '@/src/entities/grid'
 
 // ❌ WRONG - Direct import from subfolder
-import { User } from '@/src/entities/user/model/types'
+import { GridState } from '@/src/entities/grid/model/types'
 ```
 
 ## File Naming Conventions
@@ -200,15 +199,12 @@ import { User } from '@/src/entities/user/model/types'
 
 ```
 entities/
-└── user/
-    ├── api/
-    │   ├── user-api.ts
-    │   └── user-queries.ts
+└── grid/
     ├── model/
     │   ├── types.ts
     │   └── utils.ts
     ├── ui/
-    │   └── user-card.tsx
+    │   └── grid-actions.tsx
     └── index.ts  ← Single entry point
 ```
 
@@ -253,7 +249,7 @@ import { cva } from 'class-variance-authority'
 // 3. Internal imports (shared first, then specific layers)
 import { cn } from '@/src/shared/lib'
 import { Button } from '@/src/shared/ui'
-import { User } from '@/src/entities/user'
+import { GridState } from '@/src/entities/grid'
 import { LoginForm } from '@/src/features/auth'
 
 // 4. Relative imports
@@ -274,7 +270,7 @@ name: pro-grid-generator/tech-stack
 
 - **Framework**: React 19
 - **Language**: TypeScript 5
-- **Build Tool**: Vite 7
+- **Framework**: Next.js 15
 - **Styling**: Tailwind CSS 4
 - **UI Components**: shadcn/ui
 - **Package Manager**: npm

@@ -64,9 +64,6 @@ const SOCIAL_LINKS: SocialLink[] = [
   },
 ]
 
-const GITHUB_USERNAME = 'zaurberd'
-const GITHUB_URL = `https://github.com/${GITHUB_USERNAME}`
-
 function AppFooter({ className }: AppFooterProps) {
   return (
     <footer className={cn('border-t border-border bg-background/50 backdrop-blur-sm', className)}>
@@ -75,12 +72,12 @@ function AppFooter({ className }: AppFooterProps) {
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
             <span>Made by</span>
             <Link
-              href={GITHUB_URL}
+              href={SOCIAL_LINKS[2].href}
               target="_blank"
               rel="noopener noreferrer"
-              className="ml-1 rounded-md bg-foreground px-2 py-1 text-xs font-medium text-background transition-colors hover:bg-foreground/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              className="rounded-md bg-foreground px-2 py-1 text-xs font-medium text-background transition-colors hover:bg-foreground/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             >
-              {GITHUB_USERNAME}
+              lagmazavr
             </Link>
           </div>
           

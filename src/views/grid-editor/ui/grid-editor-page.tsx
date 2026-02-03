@@ -4,36 +4,28 @@ import {
   clampGridItem,
   createDefaultGridState,
   generateGridItemId,
-  GridActions,
   isValidGridItem,
   type GridItem,
   type GridState,
 } from '@/entities/grid'
 import {
-  CodeOutput,
   generateAntDesignCode,
   generateMaterialUICode,
   generateMantineCode,
   generateRawCSSCode,
   generateTailwindCode,
 } from '@/features/code-generator'
-import { CodeGeneratorOptions } from '@/features/code-generator-options'
-import { GridControls } from '@/features/grid-controls'
-import { LanguageToggle } from '@/features/language-toggle'
-import { ThemeToggle } from '@/features/theme-toggle'
+import type { CodeFormat } from '@/shared/types/code-generator'
 import { DEFAULT_TECHNOLOGY, type Technology } from '@/shared/types/routing'
 import { useMediaQuery } from '@/shared/lib'
-import { Card, CardContent, Logo } from '@/shared/ui'
 import { AppFooter } from '@/widgets/app-footer'
-import { GridCanvas } from '@/widgets/grid-canvas'
-import { TechnologySelector } from '@/widgets/technology-selector'
-import { useTranslations } from 'next-intl'
+import { CodeGeneratorPanel } from './code-generator-panel'
+import { GridEditorHeader } from './grid-editor-header'
+import { GridEditorWorkspace } from './grid-editor-workspace'
 import { useParams, useRouter } from 'next/navigation'
 import { useEffect, useMemo, useRef, useState } from 'react'
 
 type CodeGeneratorType = Technology
-
-type CodeFormat = 'jsx' | 'html'
 
 interface GridEditorPageProps {
   technology?: Technology
@@ -73,7 +65,6 @@ function savePersistedState(state: PersistedState) {
 function GridEditorPage({ technology: initialTechnology }: GridEditorPageProps) {
   const params = useParams()
   const router = useRouter()
-  const t = useTranslations()
   const locale = (params?.locale as string) || 'en'
   const urlTechnology = (params?.technology as Technology) || DEFAULT_TECHNOLOGY
   
@@ -243,89 +234,39 @@ function GridEditorPage({ technology: initialTechnology }: GridEditorPageProps) 
     setSelectedItemId(null)
   }
 
+  const codeLanguage =
+    codeFormat === 'html' || codeGeneratorType === 'raw-css' ? 'html' : 'tsx'
+
   return (
     <div className="min-h-screen bg-background">
-      <header className="border-b border-border bg-card/50 backdrop-blur supports-[backdrop-filter]:bg-card/30">
-        <div className="container mx-auto px-4 py-3 sm:px-6 sm:py-5">
-          <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-            <div className="flex items-center gap-2 sm:gap-3">
-              <Logo size={28} className="shrink-0 sm:w-8 sm:h-8" />
-              <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-foreground tracking-tight">
-                {t('header.title')}
-              </h1>
-            </div>
-            <div className="flex items-center gap-2">
-              <LanguageToggle />
-              <ThemeToggle />
-            </div>
-          </div>
-        </div>
-      </header>
+      <GridEditorHeader />
 
       <main className="container mx-auto px-4 sm:px-6 py-4 sm:py-8">
         <div className="flex flex-col gap-8">
-          <Card className="!p-0 bg-transparent border-none">
-            <CardContent>
-              <div className="flex flex-col gap-6 lg:grid lg:grid-cols-[1fr_2.5fr]">
-                <div>
-                  <GridControls
-                    className="flex flex-col gap-4 justify-between h-full"
-                    config={gridState.config}
-                    onConfigChange={handleConfigChange}
-                    onReset={handleResetGrid}
-                    selectedItemId={selectedItemId}
-                    onItemDelete={handleDeleteItem}
-                  />
-                </div>
-
-                <div className="flex flex-col gap-4">
-                  <div className="flex justify-center rounded-lg w-full overflow-hidden">
-                    <GridCanvas
-                      gridState={gridState}
-                      onItemClick={handleItemClick}
-                      onEmptyCellClick={handleEmptyCellClick}
-                      onItemChange={handleItemChange}
-                      selectedItemId={selectedItemId}
-                    />
-                  </div>
-                  <div className="lg:hidden">
-                    <GridActions
-                      onReset={handleResetGrid}
-                      selectedItemId={selectedItemId}
-                      onItemDelete={handleDeleteItem}
-                    />
-                  </div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-          <Card className="flex flex-col min-h-0 p-0 bg-transparent border-none">
-            <CardContent className="flex-1 flex flex-col min-h-0 gap-4">
-              <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-                <TechnologySelector
-                  selectedTechnology={codeGeneratorType}
-                  onTechnologyChange={handleTechnologyChange}
-                />
-              </div>
-              <CodeGeneratorOptions
-                technology={codeGeneratorType}
-                codeFormat={codeFormat}
-                onFormatChange={setCodeFormat}
-                withStyledBorders={withStyledBorders}
-                onStyledBordersChange={setWithStyledBorders}
-                withTailwind={withTailwind}
-                onTailwindChange={setWithTailwind}
-                hasVerticalItems={hasVerticalItems}
-                className="flex flex-col gap-4"
-              />
-              <CodeOutput
-                code={generatedCode}
-                language={codeFormat === 'html' || codeGeneratorType === 'raw-css' ? 'html' : 'tsx'}
-                isLoading={isCodeLoading}
-                className="flex-1"
-              />
-            </CardContent>
-          </Card>
+          <GridEditorWorkspace
+            gridState={gridState}
+            selectedItemId={selectedItemId}
+            onConfigChange={handleConfigChange}
+            onItemClick={handleItemClick}
+            onEmptyCellClick={handleEmptyCellClick}
+            onItemChange={handleItemChange}
+            onReset={handleResetGrid}
+            onItemDelete={handleDeleteItem}
+          />
+          <CodeGeneratorPanel
+            selectedTechnology={codeGeneratorType}
+            onTechnologyChange={handleTechnologyChange}
+            codeFormat={codeFormat}
+            onFormatChange={setCodeFormat}
+            withStyledBorders={withStyledBorders}
+            onStyledBordersChange={setWithStyledBorders}
+            withTailwind={withTailwind}
+            onTailwindChange={setWithTailwind}
+            hasVerticalItems={hasVerticalItems}
+            generatedCode={generatedCode}
+            isCodeLoading={isCodeLoading}
+            codeLanguage={codeLanguage}
+          />
         </div>
       </main>
       <AppFooter />

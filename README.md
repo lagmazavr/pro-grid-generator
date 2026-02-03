@@ -182,9 +182,9 @@ Each slice (entity, feature, widget) has **exactly ONE** `index.ts` file at its 
 
 Example:
 ```ts
-// entities/user/index.ts
-export type { User } from './model/types'
-export { UserCard } from './ui/user-card'
+// entities/grid/index.ts
+export type { GridState, GridItem } from './model/types'
+export { GridActions } from './ui/grid-actions'
 ```
 
 ## Path Aliases
@@ -194,7 +194,7 @@ The project uses `@/*` as a path alias pointing to `./src/*`:
 ```tsx
 import { Button } from '@/shared/ui'
 import { cn } from '@/shared/lib/utils'
-import { User } from '@/entities/user'
+import { GridState } from '@/entities/grid'
 ```
 
 ## Styling

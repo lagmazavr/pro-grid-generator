@@ -2,9 +2,8 @@
 
 import { useTranslations } from 'next-intl'
 import { Button, Checkbox } from '@/shared/ui'
+import type { CodeFormat } from '@/shared/types/code-generator'
 import type { Technology } from '@/shared/types/routing'
-
-type CodeFormat = 'jsx' | 'html'
 
 interface CodeGeneratorOptionsProps {
   technology: Technology
@@ -36,6 +35,8 @@ function CodeGeneratorOptions({
   const isMantine = technology === 'mantine'
   const showTailwindOption = isMantine && hasVerticalItems
 
+  const showBordersOption = isFormatBased || isComponentBased || isMantine
+
   return (
     <div className={className}>
       {isFormatBased && (
@@ -57,7 +58,7 @@ function CodeGeneratorOptions({
         </div>
       )}
 
-      {(isComponentBased || isMantine) && (
+      {showBordersOption && (
         <div className="flex gap-4">
           <Checkbox
             id="with-styled-borders"
@@ -73,17 +74,6 @@ function CodeGeneratorOptions({
               label={t('options.withTailwind')}
             />
           )}
-        </div>
-      )}
-
-      {isFormatBased && (
-        <div className="flex gap-4">
-          <Checkbox
-            id="with-styled-borders-css"
-            checked={withStyledBorders}
-            onChange={(e) => onStyledBordersChange(e.target.checked)}
-            label={t('options.withBorders')}
-          />
         </div>
       )}
     </div>
